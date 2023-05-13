@@ -20,6 +20,8 @@
     "@auth/solid-start": "^0.1.1",
     "@solidjs/meta": "^0.28.2",
     "@solidjs/router": "^0.8.2",
+    "@thisbeyond/solid-dnd": "^0.7.4",
+    "big.js": "^6.2.1",
     "daisyui": "^2.51.6",
     "flowbite": "^1.6.5",
     "solid-js": "^1.7.2",

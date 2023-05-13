@@ -1,5 +1,6 @@
 import { A } from "solid-start";
 import Counter from "~/components/Counter";
+import {BoardExample} from '../components/DragDrop'
 
 import { getSession } from "@auth/solid-start"
 import { createServerData$ } from "solid-start/server"
@@ -56,6 +57,7 @@ export default function Home() {
         <p>Not logged in</p>
         <button onClick={login}>Login</button>
         </>}
+      <BoardExample />
     </main>
   );
 }
