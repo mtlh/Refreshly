@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import {
   DragDropProvider,
   DragDropSensors,
@@ -82,7 +84,7 @@ const Group: VoidComponent<{ id: Id; name: string; items: Item[] }> = (
       <div class="column-header text-2xl mb-2" {...sortable.dragActivators}>
         {props.name}
       </div>
-      <div class="column bg-gray-100">
+      <div class="column cursor-move">
         <SortableProvider ids={sortedItemIds()}>
           <For each={props.items}>
             {(item) => (
@@ -100,8 +102,8 @@ const GroupOverlay: VoidComponent<{ name: string; items: Item[] }> = (
 ) => {
   return (
     <div>
-      <div class="column-header text-2xl mb-2">{props.name}</div>
-      <div class="column bg-gray-100">
+      <div class="column-header text-2xl mb-2" onDblClick={""}>{props.name}</div>
+      <div class="column cursor-move">
         <For each={props.items}>
           {(item) => <ItemOverlay name={item.name} />}
         </For>

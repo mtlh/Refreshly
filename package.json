@@ -1,12 +1,13 @@
 {
   "name": "solidauth-demo",
   "scripts": {
-    "dev": "solid-start dev",
+    "dev": "solid-start dev -p 3010",
     "build": "solid-start build",
     "start": "solid-start start"
   },
   "type": "module",
   "devDependencies": {
+    "@types/big.js": "^6.1.6",
     "@types/node": "^20.1.2",
     "autoprefixer": "^10.4.13",
     "postcss": "^8.4.21",

@@ -1,24 +1,7 @@
 import { A } from "solid-start";
 import Counter from "~/components/Counter";
-import {BoardExample} from '../components/DragDrop'
-
-import { getSession } from "@auth/solid-start"
-import { createServerData$ } from "solid-start/server"
-import { authOpts } from "../routes/api/[...solidAuth]"
-
-const useSession = () => {
-  return createServerData$(
-    async (_, { request }) => {
-      return await getSession(request, authOpts)
-    },
-    { key: () => ["auth_user"] }
-  )
-}
-
-import { signIn, signOut } from "@auth/solid-start/client"
-
-const login = () => signIn("github")
-const logout = () => signOut()
+import { BoardExample } from '../components/DragDrop'
+import { login, logout, useSession } from '../components/LoginHooks'
 
 export default function Home() {
   const session = useSession()
@@ -49,7 +32,7 @@ export default function Home() {
       </p>
       <h1>Hello world!</h1>
       {user() && <>
-          <p>Logged in as {user()?.name}</p>
+          <p>Logged in as {JSON.stringify(user())}</p>
           <button onClick={logout}>Logout</button>
         </>
       }
