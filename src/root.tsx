@@ -3,11 +3,16 @@ import { Suspense } from "solid-js";
 import { useLocation, Body, ErrorBoundary, FileRoutes, Head, Html, Meta, Routes, Scripts, Title, A } from "solid-start";
 import "./root.css";
 import { login, logout, useSession } from "./components/LoginHooks";
+import { addusertodb } from "./functions/adduser";
 
 export default function Root() {
   const location = useLocation().pathname;
   const session = useSession()
   const user = () => session()?.user
+  console.log(user())
+  if (user()) {
+    addusertodb(user()?.name, user()?.email, user()?.image)
+  }
   return (
     <Html lang="en" data-theme="winter">
       <Head>

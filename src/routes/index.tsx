@@ -1,16 +1,33 @@
-import { A } from "solid-start";
+import { A, useRouteData } from "solid-start";
 import Counter from "~/components/Counter";
 import { BoardExample } from '../components/DragDrop'
 import { login, logout, useSession } from '../components/LoginHooks'
+import { db } from "~/functions/db_client";
+import { users } from "~/db/schema";
+import { createServerData$ } from "solid-start/server";
+import { For } from "solid-js";
+
+export function routeData() {
+  const allUsers = createServerData$(() => db.select().from(users));
+  return allUsers;
+}
 
 export default function Home() {
   const session = useSession()
   const user = () => session()?.user
+
+  const data = useRouteData<typeof routeData>();
+  
   return (
     <main class="text-center mx-auto text-gray-700 p-4">
       <h1 class="max-6-xs text-6xl text-sky-700 font-thin uppercase my-16">
         Hello world!
       </h1>
+
+      <For each={data()}>
+        {(user) => <li>{user.name}</li>}
+      </For>
+
       <Counter />
       <p class="mt-8">
         Visit{" "}
