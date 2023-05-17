@@ -1,17 +1,18 @@
 // @refresh reload
 import { Suspense } from "solid-js";
-import { useLocation, Body, ErrorBoundary, FileRoutes, Head, Html, Meta, Routes, Scripts, Title, A } from "solid-start";
+import { useLocation, Body, ErrorBoundary, FileRoutes, Head, Html, Meta, Routes, Scripts, Title, useNavigate } from "solid-start";
 import "./root.css";
 import { login, logout, useSession } from "./components/LoginHooks";
 import { addusertodb } from "./functions/adduser";
+import ToggleTeam from "./components/Toggle/ToggleTeam";
+import ToggleProject from "./components/Toggle/ToggleProject";
 
 export default function Root() {
   const location = useLocation().pathname;
-  const session = useSession()
-  const user = () => session()?.user
-  console.log(user())
+  const session = useSession();
+  const user = () => session()?.user;
   if (user()) {
-    addusertodb(user()?.name, user()?.email, user()?.image)
+    addusertodb(user()?.name, user()?.email, user()?.image);
   }
   return (
     <Html lang="en" data-theme="winter">
@@ -19,7 +20,6 @@ export default function Root() {
         <Title>Refreshly</Title>
         <Meta charset="utf-8" />
         <Meta name="viewport" content="width=device-width, initial-scale=1" />
-        
       </Head>
       <Body>
         <Suspense>
@@ -64,17 +64,17 @@ export default function Root() {
                             }
                           </li>
                           <li>
-                            {location == "/kanban" ?
+                            {location == "/planner" ?
                                 <p class="flex items-center p-2 text-black rounded-2xl bg-white dark:text-white dark:hover:bg-gray-700">
                                   <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-black transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                                  <span class="flex-1 ml-3 whitespace-nowrap">Kanban</span>
-                                  <span class="inline-flex items-center justify-center px-2 ml-3 text-sm font-medium text-gray-800 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300">Pro</span>
+                                  <span class="flex-1 ml-3 whitespace-nowrap">Planner</span>
+                                  <span class="inline-flex items-center justify-center px-2 ml-3 text-sm font-medium text-gray-800 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300">3</span>
                                 </p>
                                 :
-                                <a href="/kanban" class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
+                                <a href="/planner" class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
                                   <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                                  <span class="flex-1 ml-3 whitespace-nowrap">Kanban</span>
-                                  <span class="inline-flex items-center justify-center px-2 ml-3 text-sm font-medium text-gray-800 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300">Pro</span>
+                                  <span class="flex-1 ml-3 whitespace-nowrap">Planner</span>
+                                  <span class="inline-flex items-center justify-center px-2 ml-3 text-sm font-medium text-gray-800 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300">3</span>
                                 </a>
                               }
                           </li>
@@ -85,23 +85,19 @@ export default function Root() {
                                 <span class="inline-flex items-center justify-center w-3 h-3 p-3 ml-3 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300">3</span>
                               </a>
                           </li>
-                          <li>
-                              <a href="/user" class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
-                                <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
-                                <span class="flex-1 ml-3 whitespace-nowrap">Users</span>
-                              </a>
-                          </li>
-                          <li>
-                              <a href="/products" class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
-                                <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"></path></svg>
-                                <span class="flex-1 ml-3 whitespace-nowrap">Products</span>
-                              </a>
-                          </li>
+                          <ToggleTeam />
+                          <ToggleProject />
                           <li>
                               <a href="/profile" class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700 cursor-pointer">
                                 <img class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-xl"
                                   src={user()?.image?.toString()} />
                                 <span class="flex-1 ml-3 whitespace-nowrap">{user()?.name}</span>
+                              </a>
+                          </li>
+                          <li>
+                              <a href="/settings" class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
+                                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"  stroke="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M56 32a23.74 23.74 0 0 0-.32-3.89L48 25.37 51.5 18a24.41 24.41 0 0 0-5.5-5.5L38.63 16l-2.74-7.68a23.8 23.8 0 0 0-7.78 0L25.37 16 18 12.5a24.41 24.41 0 0 0-5.5 5.5l3.5 7.37-7.68 2.74a23.8 23.8 0 0 0 0 7.78L16 38.63 12.5 46a24.41 24.41 0 0 0 5.5 5.5l7.37-3.5 2.74 7.68a23.8 23.8 0 0 0 7.78 0L38.63 48 46 51.5a24.41 24.41 0 0 0 5.5-5.5L48 38.63l7.68-2.74A23.74 23.74 0 0 0 56 32z"></path><circle cx="32" cy="32" r="4"></circle></g></svg>
+                                <span class="flex-1 ml-3 whitespace-nowrap">Settings</span>
                               </a>
                           </li>
                           <li>

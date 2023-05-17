@@ -1,7 +1,5 @@
 import { A, useRouteData } from "solid-start";
 import Counter from "~/components/Counter";
-import { BoardExample } from '../components/DragDrop'
-import { login, logout, useSession } from '../components/LoginHooks'
 import { db } from "~/functions/db_client";
 import { users } from "~/db/schema";
 import { createServerData$ } from "solid-start/server";
@@ -13,8 +11,6 @@ export function routeData() {
 }
 
 export default function Home() {
-  const session = useSession()
-  const user = () => session()?.user
 
   const data = useRouteData<typeof routeData>();
   
@@ -48,16 +44,6 @@ export default function Home() {
         </A>{" "}
       </p>
       <h1>Hello world!</h1>
-      {user() && <>
-          <p>Logged in as {JSON.stringify(user())}</p>
-          <button onClick={logout}>Logout</button>
-        </>
-      }
-      {!user() && <>
-        <p>Not logged in</p>
-        <button onClick={login}>Login</button>
-        </>}
-      <BoardExample />
     </main>
   );
 }
