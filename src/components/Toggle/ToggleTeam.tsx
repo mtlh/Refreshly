@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
 import "./Toggle.css"
-
+ 
 function ToggleTeam() {
   var basestate = "";
   if (typeof window !== 'undefined') {
@@ -35,30 +35,12 @@ function ToggleTeam() {
       </p>
       <ul id="dropdown-example" class={"quick-example bg-sky-800 rounded-xl  " + toggleclass()}>
         <div>
-        <li>
-          <a href="/user" class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
-            <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
-            <span class="flex-1 ml-3 whitespace-nowrap">Team A</span>
-          </a>
-        </li>
-        <li>
-          <a href="/user" class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
-            <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
-            <span class="flex-1 ml-3 whitespace-nowrap">Team B</span>
-          </a>
-        </li>
-        <li>
-          <a href="/user" class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
-            <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
-            <span class="flex-1 ml-3 whitespace-nowrap">Team C</span>
-          </a>
-        </li>
-        <li>
-          <a href="/user" class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
-            <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
-            <span class="flex-1 ml-3 whitespace-nowrap">Team D</span>
-          </a>
-        </li>
+            <li>
+              <a href="/user" class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
+                <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                <span class="flex-1 ml-3 whitespace-nowrap">Team</span>
+              </a>
+            </li>
         </div>
       </ul>
     </>

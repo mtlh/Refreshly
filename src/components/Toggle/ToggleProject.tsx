@@ -33,7 +33,7 @@ function ToggleProject() {
         }
         <span class="flex-1 ml-3 whitespace-nowrap">Projects</span>
       </p>
-      <ul id="dropdown-example" class={"quick-example bg-sky-800 rounded-xl  " + toggleclass()}>
+      <ul id="dropdown-example" class={"quick-example bg-sky-800 rounded-xl " + toggleclass()}>
         <div>
             <li>
                 <a href="/user" class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
