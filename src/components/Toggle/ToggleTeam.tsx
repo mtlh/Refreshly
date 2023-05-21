@@ -4,7 +4,6 @@ import "./Toggle.css"
 function ToggleTeam() {
   var basestate = "";
   if (typeof window !== 'undefined') {
-    // your code 
     if (localStorage.getItem('team') == 'true') {
       basestate = "quick-example-active";
     }

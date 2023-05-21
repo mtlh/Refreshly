@@ -21,7 +21,7 @@ export default function Home() {
       </h1>
 
       <For each={data()}>
-        {(user) => <li>{user.name}</li>}
+        {(user) => <li>{user.username}</li>}
       </For>
 
       <Counter />

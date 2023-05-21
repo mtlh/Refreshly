@@ -5,7 +5,7 @@ const conn = connect(config);
 
 export async function GET() {
 
-    //await conn.execute('DROP TABLE users');
+    await conn.execute('DROP TABLE IF EXISTS users');
     const users: string = 'CREATE TABLE IF NOT EXISTS users ( '+
         'id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, '+
         'username VARCHAR(255) NOT NULL, '+
@@ -15,6 +15,21 @@ export async function GET() {
     ')';
     console.log(users);
     await conn.execute(users);
+
+    await conn.execute('DROP TABLE IF EXISTS auth');
+    const auth: string = 'CREATE TABLE IF NOT EXISTS auth ( '+
+        'id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, '+
+        'username VARCHAR(255) NOT NULL, '+
+        'displayname VARCHAR(255), '+
+        'email VARCHAR(255) NOT NULL, '+
+        'pass VARCHAR(255) NOT NULL, '+
+        'imgurl VARCHAR(255), '+
+        'validemail BOOLEAN, '+
+        'token VARCHAR(100) '+
+    ')';
+    console.log(auth);
+    await conn.execute(auth);
+
 
     return new Response("Created");
 }
