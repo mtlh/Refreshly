@@ -3,70 +3,43 @@ import server$ from "solid-start/server";
 import { auth } from "~/db/schema";
 import { db } from "~/functions/db_client";
 import { eq } from "drizzle-orm";
-import { encrypt } from "~/functions/encrypt";
 import { useNavigate } from "solid-start";
+import Cookies from "js-cookie";
+import { encryptCheck } from "~/functions/encrypt";
 import { sign } from "jsonwebtoken";
 import { generatetoken } from "~/functions/generatetoken";
-import Cookies from "js-cookie";
 
 const Signup = () => {
     const [username, setUsername] = createSignal("");
-    const [email, setEmail] = createSignal("");
     const [pass, setPass] = createSignal("");
-    const [confirmpass, setConfirmpass] = createSignal("");
-    const [terms, setTerms] = createSignal(false);
     const [errorOutput, setErrorOutput] = createSignal("");
-    const [isavailable, setAvailable] = createSignal("ring-2 ring-green-500 rounded-xl");
 
     const nav = useNavigate();
 
-    async function createAccount () {
-        const create = server$(async (terms, pass, confirmpass, email, username) => {
-            if (terms == true){
-                if (pass && confirmpass && email && username) {
-                    if (pass == confirmpass) {
-                        const findusername = await db.select().from(auth).where(eq(auth.username, username))
-                        if (findusername.length == 0) {
-                            const encrypt_pass = await encrypt(pass);
-                            // @ts-ignore
-                            var token = sign({ token: generatetoken(100) }, process.env.JWTSECRET, { algorithm: 'HS256' });
-                            const insertuser = await db.insert(auth).values({username: username, 
-                                 displayname: username, email: email, pass: encrypt_pass,
-                                 validemail: false, token: token}); 
-                            return {error: "/dashboard", token: token};
-                        } else {
-                            return {error: "Username must be unique.", token: null};
-                        }
+    async function useLogin () {
+        const logincheck = server$(async (pass, username) => {
+            if (pass && username) { 
+                const findusername = await db.select().from(auth).where(eq(auth.username, username))
+                if (findusername.length == 1) {
+                    // @ts-ignore
+                    const issame = await encryptCheck(pass, findusername[0].pass);
+                    if (issame == true) {
+                        // @ts-ignore
+                        var token = sign({ token: generatetoken(100) }, process.env.JWTSECRET, { algorithm: 'HS256' });
+                        const updatetoken = await db.update(auth).set({token: token}).where(eq(auth.username, username)); 
+                        return {error: "/dashboard", token: token};
                     } else {
-                        return {error: "Password and confirmation must match.", token: null};
+                        return {error: "Invalid username or password", token: null};
                     }
                 } else {
-                    return {error: "Please complete all fields.", token: null};
+                    return {error: "Username not found", token: null};
                 }
             } else {
-                return {error: "Terms and conditions must be checked.", token: null};
+                return {error: "All fields must be completed", token: null};
             }
         })
-        var error = await create(terms(), pass(), confirmpass(), email(), username());
+        var error = await logincheck(pass(), username());
         if (error.token != null) {Cookies.set("auth", error.token); nav("/dashboard");} else {setErrorOutput(error.error)};
-    }
-    async function checkUsername() {
-        let name = username();
-        const isvalid = server$(async (name) => {
-            const findusername = await db.select().from(auth).where(eq(auth.username, name))
-            if (findusername.length == 0) {
-                return true
-            } else {
-                return false
-            }
-        })
-        const ret = await isvalid(name);
-        if (ret == false) {
-            setAvailable("ring-2 ring-red-500 rounded-xl");
-        } else {
-            setAvailable("ring-2 ring-green-500 rounded-xl");
-        }
-        return ret;
     }
     return (
         <>
@@ -79,39 +52,23 @@ const Signup = () => {
                     <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md md:max-w-3xl lg:max-w-3xl xl:p-0 dark:bg-gray-800 dark:border-gray-700">
                         <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
                             <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                                Create an account
+                                Login to your account
                             </h1>
                             <div class="space-y-4 md:space-y-6">
                                 <div>
                                     <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Username</label>
-                                    <input class={isavailable() + "bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"} value={username()} oninput={(e)=>{setUsername(e.currentTarget.value);checkUsername()}} placeholder="User" type="username" name="username" id="username" />
-                                </div>
-                                <div>
-                                    <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
-                                    <input value={email()} oninput={(e)=>{setEmail(e.currentTarget.value);}}  type="email" name="email" id="email" placeholder="user@company.com" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                                    <input class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={username()} oninput={(e)=>{setUsername(e.currentTarget.value)}} placeholder="User" type="username" name="username" id="username" />
                                 </div>
                                 <div>
                                     <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
                                     <input value={pass()} oninput={(e)=>{setPass(e.currentTarget.value);}} type="password" name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                                 </div>
-                                <div>
-                                    <label for="confirm-password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm password</label>
-                                    <input value={confirmpass()} oninput={(e)=>{setConfirmpass(e.currentTarget.value);}} type="password" name="confirm-password" id="confirm-password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
-                                </div>
-                                <div class="flex items-start">
-                                    <div class="flex items-center h-5">
-                                        <input oninput={()=>{setTerms(!terms());}} id="terms" aria-describedby="terms" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800" />
-                                    </div>
-                                    <div class="ml-3 text-sm">
-                                        <label for="terms" class="font-light text-gray-500 dark:text-gray-300">I accept the <a class="font-medium text-primary-600 hover:underline dark:text-primary-500" href="#">Terms and Conditions</a></label>
-                                    </div>
-                                </div>
                                 <button type="submit" 
-                                    onclick={createAccount}
+                                    onclick={useLogin}
                                     class="w-full text-white bg-sky-700 hover:bg-sky-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                                    >Create an account</button>
+                                    >Login</button>
                                 <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-                                    Already have an account? <a href="/login" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Login here</a>
+                                    Dont have an account? <a href="/login" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Create one</a>
                                 </p>
                                 <p class="text-red-600 text-lg p-2">{errorOutput()}</p>
                             </div>

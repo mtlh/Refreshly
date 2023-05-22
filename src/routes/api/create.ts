@@ -25,7 +25,7 @@ export async function GET() {
         'pass VARCHAR(255) NOT NULL, '+
         'imgurl VARCHAR(255), '+
         'validemail BOOLEAN, '+
-        'token VARCHAR(100) '+
+        'token VARCHAR(256) '+
     ')';
     console.log(auth);
     await conn.execute(auth);

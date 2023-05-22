@@ -1,5 +1,4 @@
 import { boolean, mysqlTable, serial, varchar } from "drizzle-orm/mysql-core";
-import { generatetoken } from '../functions/generatetoken';
 
 //npx drizzle-kit generate:mysql --out migrations-folder --schema src/db/schema.ts
 
@@ -19,5 +18,5 @@ export const auth = mysqlTable('auth', {
   pass: varchar('pass', {length: 256}),
   imgurl: varchar('imgurl', { length: 256 }),
   validemail: boolean('validemail').default(false),
-  token: varchar('token', {length: 100}).default(generatetoken(100))
+  token: varchar('token', {length: 256})
 });

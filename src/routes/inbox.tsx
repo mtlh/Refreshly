@@ -1,5 +1,5 @@
 import { createEffect, createSignal } from 'solid-js';
-import { useSession } from '~/components/LoginHooks';
+import { useSession } from '~/functions/LoginHooks';
 
 const MyComponent = () => {
   const session = useSession();
