@@ -6,8 +6,9 @@ import { eq } from "drizzle-orm";
 import { useNavigate } from "solid-start";
 import Cookies from "js-cookie";
 import { encryptCheck } from "~/functions/encrypt";
-import { sign } from "jsonwebtoken";
 import { generatetoken } from "~/functions/generatetoken";
+import { SignJWT } from 'jose';
+import crypto from 'crypto'; 
 
 const Signup = () => {
     const [username, setUsername] = createSignal("");
@@ -25,7 +26,9 @@ const Signup = () => {
                     const issame = await encryptCheck(pass, findusername[0].pass);
                     if (issame == true) {
                         // @ts-ignore
-                        var token = sign({ token: generatetoken(100) }, process.env.JWTSECRET, { algorithm: 'HS256' });
+                        const key = crypto.createSecretKey(process.env.JWTSECRET, 'utf-8'); 
+                        // @ts-ignore
+                        var token = await new SignJWT({ token: generatetoken(100) }).setProtectedHeader({ alg: 'HS256' }).sign(key);
                         const updatetoken = await db.update(auth).set({token: token}).where(eq(auth.username, username)); 
                         return {error: "/dashboard", token: token};
                     } else {

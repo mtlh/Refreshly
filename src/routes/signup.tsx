@@ -5,9 +5,10 @@ import { db } from "~/functions/db_client";
 import { eq } from "drizzle-orm";
 import { encrypt } from "~/functions/encrypt";
 import { useNavigate } from "solid-start";
-import { sign } from "jsonwebtoken";
 import { generatetoken } from "~/functions/generatetoken";
 import Cookies from "js-cookie";
+import { SignJWT } from 'jose';
+import crypto from 'crypto'; 
 
 const Signup = () => {
     const [username, setUsername] = createSignal("");
@@ -29,7 +30,9 @@ const Signup = () => {
                         if (findusername.length == 0) {
                             const encrypt_pass = await encrypt(pass);
                             // @ts-ignore
-                            var token = sign({ token: generatetoken(100) }, process.env.JWTSECRET, { algorithm: 'HS256' });
+                            const key = crypto.createSecretKey(process.env.JWTSECRET, 'utf-8'); 
+                            // @ts-ignore
+                            var token = await new SignJWT({ token: generatetoken(100) }).setProtectedHeader({ alg: 'HS256' }).sign(key);
                             const insertuser = await db.insert(auth).values({username: username, 
                                  displayname: username, email: email, pass: encrypt_pass,
                                  validemail: false, token: token}); 

@@ -3,7 +3,7 @@ import { config } from '~/functions/db_config';
 
 const conn = connect(config);
 
-export default async function GET() {
+export async function GET() {
 
     await conn.execute('DROP TABLE IF EXISTS users');
     const users: string = 'CREATE TABLE IF NOT EXISTS users ( '+

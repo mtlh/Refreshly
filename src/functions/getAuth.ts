@@ -1,23 +1,25 @@
 // @ts-nocheck
-import { verify } from "jsonwebtoken";
+import { jwtVerify } from "jose";
 import server$ from "solid-start/server";
 import { db } from "./db_client";
 import { auth } from "~/db/schema";
 import { eq } from "drizzle-orm";
+import crypto from 'crypto'; 
 
 export const getAuth = server$(async (token) => {
 
+    // @ts-ignore
+    const key = crypto.createSecretKey(process.env.JWTSECRET, 'utf-8');
+
     var decodejwtfromuser = "nothing";
-    verify(token, process.env.JWTSECRET, function(err, decoded) { 
-        decodejwtfromuser = decoded.token;
-    });
+    const verifyuser = await jwtVerify(token, key);
+    decodejwtfromuser = verifyuser.payload.token;
     //console.log(decodejwtfromuser);
 
     var decodejwtfromdb = "blank";
     const getuser = await db.select().from(auth).where(eq(auth.token, token));
-    verify(getuser[0].token, process.env.JWTSECRET, function(err, decoded) { 
-        decodejwtfromdb = decoded.token;
-    });
+    const verifydb = await jwtVerify(getuser[0].token, key);
+    decodejwtfromdb = verifydb.payload.token;
     //console.log(decodejwtfromdb);
 
     if (decodejwtfromdb == decodejwtfromuser) {

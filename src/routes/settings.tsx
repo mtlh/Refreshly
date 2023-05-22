@@ -1,5 +1,5 @@
 import Cookies from "js-cookie";
-import { createEffect, createSignal } from "solid-js";
+import { createEffect } from "solid-js";
 import { createStore } from "solid-js/store";
 import { useNavigate } from "solid-start";
 import NotLoggedIn from "~/components/NotLoggedIn";
