@@ -4,12 +4,12 @@ import server$ from "solid-start/server";
 import { db } from "./db_client";
 import { auth } from "~/db/schema";
 import { eq } from "drizzle-orm";
-import crypto from 'crypto'; 
 
 export const getAuth = server$(async (token) => {
 
     // @ts-ignore
-    const key = crypto.createSecretKey(process.env.JWTSECRET, 'utf-8');
+    const key = new TextEncoder().encode(process.env.JWTSECRET);
+    console.log(key);
 
     var decodejwtfromuser = "nothing";
     const verifyuser = await jwtVerify(token, key);

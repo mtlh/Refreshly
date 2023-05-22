@@ -8,7 +8,6 @@ import Cookies from "js-cookie";
 import { encryptCheck } from "~/functions/encrypt";
 import { generatetoken } from "~/functions/generatetoken";
 import { SignJWT } from 'jose';
-import crypto from 'crypto'; 
 
 const Signup = () => {
     const [username, setUsername] = createSignal("");
@@ -26,7 +25,7 @@ const Signup = () => {
                     const issame = await encryptCheck(pass, findusername[0].pass);
                     if (issame == true) {
                         // @ts-ignore
-                        const key = crypto.createSecretKey(process.env.JWTSECRET, 'utf-8'); 
+                        const key = new TextEncoder().encode(process.env.JWTSECRET);
                         // @ts-ignore
                         var token = await new SignJWT({ token: generatetoken(100) }).setProtectedHeader({ alg: 'HS256' }).sign(key);
                         const updatetoken = await db.update(auth).set({token: token}).where(eq(auth.username, username)); 
