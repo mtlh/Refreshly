@@ -7,20 +7,24 @@ import { eq } from "drizzle-orm";
 
 export const getAuth = server$(async (token) => {
 
-    // @ts-ignore
-    const key = new TextEncoder().encode(process.env.JWTSECRET);
-    console.log(key);
-
-    var decodejwtfromuser = "nothing";
-    const verifyuser = await jwtVerify(token, key);
-    decodejwtfromuser = verifyuser.payload.token;
-    //console.log(decodejwtfromuser);
-
     var decodejwtfromdb = "blank";
-    const getuser = await db.select().from(auth).where(eq(auth.token, token));
-    const verifydb = await jwtVerify(getuser[0].token, key);
-    decodejwtfromdb = verifydb.payload.token;
-    //console.log(decodejwtfromdb);
+    var decodejwtfromuser = "nothing";
+    let getuser;
+    if (token) {
+        // @ts-ignore
+        const key = new TextEncoder().encode(process.env.JWTSECRET);
+        //console.log(key);
+
+        var decodejwtfromuser = "nothing";
+        const verifyuser = await jwtVerify(token, key);
+        decodejwtfromuser = verifyuser.payload.token;
+        //console.log(decodejwtfromuser);
+
+        getuser = await db.select().from(auth).where(eq(auth.token, token));
+        const verifydb = await jwtVerify(getuser[0].token, key);
+        decodejwtfromdb = verifydb.payload.token;
+        //console.log(decodejwtfromdb);
+    }
 
     if (decodejwtfromdb == decodejwtfromuser) {
         return {loggedin: true, user: {
@@ -31,10 +35,10 @@ export const getAuth = server$(async (token) => {
         }};
     } else {
         return {loggedin: false, user: {
-            username: "",
-            displayname: "",
-            email: "",
-            imgurl: "",
+            username: "none",
+            displayname: "none",
+            email: "none",
+            imgurl: "none",
         }};
     }
 });

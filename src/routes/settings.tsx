@@ -11,7 +11,10 @@ export default function Page() {
   const [auth, setAuth] = createStore({
     loggedin: false,
     user: {
-      username: ""
+      username: "",
+      displayname: "",
+      email: "",
+      imgurl: "",
     }
   });
   //const [auth] = createResource(getAuth);
@@ -27,7 +30,8 @@ export default function Page() {
       {auth ?
         <>
           <ul>
-            {auth.user.username}
+            <img src={auth.user.imgurl}/>
+            {auth.user.displayname}
           </ul>
         </>
         :

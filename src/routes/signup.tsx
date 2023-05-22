@@ -4,7 +4,6 @@ import { auth } from "~/db/schema";
 import { db } from "~/functions/db_client";
 import { eq } from "drizzle-orm";
 import { encrypt } from "~/functions/encrypt";
-import { useNavigate } from "solid-start";
 import { generatetoken } from "~/functions/generatetoken";
 import Cookies from "js-cookie";
 import { SignJWT } from 'jose';
@@ -17,8 +16,6 @@ const Signup = () => {
     const [terms, setTerms] = createSignal(false);
     const [errorOutput, setErrorOutput] = createSignal("");
     const [isavailable, setAvailable] = createSignal("ring-2 ring-green-500 rounded-xl");
-
-    const nav = useNavigate();
 
     async function createAccount () {
         const create = server$(async (terms, pass, confirmpass, email, username) => {
@@ -34,7 +31,7 @@ const Signup = () => {
                             var token = await new SignJWT({ token: generatetoken(100) }).setProtectedHeader({ alg: 'HS256' }).sign(key);
                             const insertuser = await db.insert(auth).values({username: username, 
                                  displayname: username, email: email, pass: encrypt_pass,
-                                 validemail: false, token: token}); 
+                                 validemail: false, token: token, imgurl: "https://eu.ui-avatars.com/api/?name=" + username}); 
                             return {error: "/dashboard", token: token};
                         } else {
                             return {error: "Username must be unique.", token: null};
@@ -50,7 +47,7 @@ const Signup = () => {
             }
         })
         var error = await create(terms(), pass(), confirmpass(), email(), username());
-        if (error.token != null) {Cookies.set("auth", error.token); nav("/dashboard");} else {setErrorOutput(error.error)};
+        if (error.token != null) {Cookies.set("auth", error.token); location.href = "/dashboard";} else {setErrorOutput(error.error)};
     }
     async function checkUsername() {
         let name = username();

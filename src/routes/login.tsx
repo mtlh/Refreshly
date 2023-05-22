@@ -3,7 +3,6 @@ import server$ from "solid-start/server";
 import { auth } from "~/db/schema";
 import { db } from "~/functions/db_client";
 import { eq } from "drizzle-orm";
-import { useNavigate } from "solid-start";
 import Cookies from "js-cookie";
 import { encryptCheck } from "~/functions/encrypt";
 import { generatetoken } from "~/functions/generatetoken";
@@ -13,8 +12,6 @@ const Signup = () => {
     const [username, setUsername] = createSignal("");
     const [pass, setPass] = createSignal("");
     const [errorOutput, setErrorOutput] = createSignal("");
-
-    const nav = useNavigate();
 
     async function useLogin () {
         const logincheck = server$(async (pass, username) => {
@@ -41,7 +38,7 @@ const Signup = () => {
             }
         })
         var error = await logincheck(pass(), username());
-        if (error.token != null) {Cookies.set("auth", error.token); nav("/dashboard");} else {setErrorOutput(error.error)};
+        if (error.token != null) {Cookies.set("auth", error.token); location.href = "/dashboard";} else {setErrorOutput(error.error)};
     }
     return (
         <>
