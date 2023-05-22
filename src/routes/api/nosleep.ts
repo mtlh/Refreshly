@@ -1,7 +1,7 @@
 import { connect } from '@planetscale/database'
 import { config } from '~/functions/db_config';
 
-export async function GET() {
+export default async function GET() {
     const conn = connect(config)
     await conn.execute('CREATE TABLE IF NOT EXISTS test ( id INT PRIMARY KEY, test VARCHAR(255) NOT NULL)');
     await conn.execute('INSERT IGNORE INTO test VALUES (?,?)', [1, "Complete"]);
