@@ -16,14 +16,24 @@ export const getAuth = server$(async (token) => {
         //console.log(key);
 
         var decodejwtfromuser = "nothing";
-        const verifyuser = await jwtVerify(token, key);
-        decodejwtfromuser = verifyuser.payload.token;
-        //console.log(decodejwtfromuser);
+        try {
+            const verifyuser = await jwtVerify(token, key);
+            decodejwtfromuser = verifyuser.payload.token;
+            //console.log(decodejwtfromuser);
 
-        getuser = await db.select().from(auth).where(eq(auth.token, token));
-        const verifydb = await jwtVerify(getuser[0].token, key);
-        decodejwtfromdb = verifydb.payload.token;
-        //console.log(decodejwtfromdb);
+            getuser = await db.select().from(auth).where(eq(auth.token, token));
+            const verifydb = await jwtVerify(getuser[0].token, key);
+            decodejwtfromdb = verifydb.payload.token;
+            //console.log(decodejwtfromdb);
+            
+        } catch {
+            return {loggedin: false, user: {
+                username: "none",
+                displayname: "none",
+                email: "none",
+                imgurl: "none",
+            }};
+        }
     }
 
     if (decodejwtfromdb == decodejwtfromuser) {
