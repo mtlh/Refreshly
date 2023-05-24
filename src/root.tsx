@@ -25,15 +25,15 @@ export default function Root() {
   //const [auth] = createResource(getAuth);
   createEffect(async () => {
     if (checkAuth() == true) {
-      setAuth(await getAuth(Cookies.get("auth")));
+    setAuth(await getAuth(Cookies.get("auth")));
       setCheckAuth(false);
       if (auth.loggedin == false && path() != "/login" && path() != "/signup" && path() != "/" ) {
         navigate("/login");
       }
     }
-    setTimeout(() => {
+    if (path() != window.location.pathname) {
       setPath(window.location.pathname);
-    }, 150);
+    }
   });
   
   return (

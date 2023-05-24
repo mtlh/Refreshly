@@ -1,12 +1,15 @@
-import { For, createResource } from "solid-js";
+import { For, createEffect, createSignal } from "solid-js";
 import server$ from "solid-start/server";
 
 export default function Page() {
-  //const [student, setStudent] = createSignal(null);
-  const [test] = createResource(FetchStudents);
+  const [student, setStudent] = createSignal(null);
+  createEffect(async () => {
+    setStudent(await FetchStudents());
+  });
+  //const [test] = createResource(FetchStudents);
   return (
     <>
-      {/* <ul>
+      <ul>
         {student() &&
           <>
             <p>Profile</p>
@@ -15,13 +18,13 @@ export default function Page() {
             </For>
           </>
         }
-      </ul> */}
-      <ul>
+      </ul>
+      {/* <ul>
         <p>Profile</p>
         <For each={test()}>
             {(test) => <li>{test.name}</li>}
         </For>
-      </ul>
+      </ul> */}
     </>
   );
 }
