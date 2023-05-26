@@ -7,11 +7,6 @@ import { getAuth } from "~/functions/getAuth";
 import { createSignal } from 'solid-js';
 
 export default function SettingsPage() {
-  const [password, setPassword] = createSignal('');
-  const [email, setEmail] = createSignal('');
-  const [username, setUsername] = createSignal('');
-
-  const nav = useNavigate();
   const [auth, setAuth] = createStore({
     loggedin: false,
     user: {
@@ -21,10 +16,18 @@ export default function SettingsPage() {
       imgurl: "",
     }
   });
+
+  const [password, setPassword] = createSignal('');
+  const [email, setEmail] = createSignal(auth.user.email);
+  const [username, setUsername] = createSignal(auth.user.username);
+
+  const nav = useNavigate();
   //const [auth] = createResource(getAuth);
   createEffect(async () => {
     setAuth(await getAuth(Cookies.get("auth")));
     if (auth.loggedin == false) {nav("/login")};
+    setUsername(auth.user.username);
+    setEmail(auth.user.email);
   });
 
   const handleSubmitPassword = () => {
@@ -68,7 +71,7 @@ export default function SettingsPage() {
                     onInput={(event) => setPassword(event.target.value)}
                   />
                   <button
-                    class={`mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600`}
+                    class={`mt-2 px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-600`}
                     onClick={handleSubmitPassword}
                   >
                     Confirm Password
@@ -87,7 +90,7 @@ export default function SettingsPage() {
                     onInput={(event) => setEmail(event.target.value)}
                   />
                   <button
-                    class={`mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600`}
+                    class={`mt-2 px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-600`}
                     onClick={handleSubmitEmail}
                   >
                     Confirm Email
@@ -106,7 +109,7 @@ export default function SettingsPage() {
                     onInput={(event) => setUsername(event.target.value)}
                   />
                   <button
-                    class={`mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600`}
+                    class={`mt-2 px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-600`}
                     onClick={handleSubmitUsername}
                   >
                     Confirm Username

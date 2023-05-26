@@ -6,7 +6,6 @@ import { auth } from "~/db/schema";
 import { eq } from "drizzle-orm";
 
 export const getAuth = server$(async (token) => {
-
     var decodejwtfromdb = "blank";
     var decodejwtfromuser = "nothing";
     let getuser;

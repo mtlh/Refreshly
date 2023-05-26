@@ -1,21 +1,22 @@
 import { For, createEffect, createSignal } from "solid-js";
 import server$ from "solid-start/server";
+import Counter from "~/components/Counter";
 
 export default function Page() {
   const [student, setStudent] = createSignal(null);
   createEffect(async () => {
     setStudent(await FetchStudents());
   });
-  //const [test] = createResource(FetchStudents);
   return (
     <>
       <ul>
-        {student() &&
+        {student() && 
           <>
             <p>Profile</p>
             <For each={student()}>
                 {(student) => <li>{student.name}</li>}
             </For>
+            <Counter />
           </>
         }
       </ul>

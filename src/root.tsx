@@ -31,9 +31,9 @@ export default function Root() {
         navigate("/login");
       }
     }
-    if (path() != window.location.pathname) {
+    setTimeout(() => {
       setPath(window.location.pathname);
-    }
+    }, 300);
   });
   
   return (
@@ -122,13 +122,13 @@ export default function Root() {
                           <li>
                               {path() == "/profile" ?
                                 <p class="flex items-center p-2 text-black rounded-full bg-white dark:text-white dark:hover:bg-gray-700">
-                                  <img class="flex-shrink-0 w-8 h-8 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-xl"
+                                  <img class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-xl"
                                     src={auth.user.imgurl.toString()} />
                                   <span class="flex-1 ml-3 whitespace-nowrap">{auth.user.displayname}</span>
                                 </p>
                                 :
-                                <a onclick={() => {setCheckAuth(true); navigate("/profile");}} class="cursor-pointer flex items-center p-2 text-white rounded-full dark:text-white dark:hover:bg-gray-700">
-                                  <img class="flex-shrink-0 w-8 h-8 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-xl"
+                                <a onclick={() => {setCheckAuth(true); navigate("/profile")}} class="cursor-pointer flex items-center p-2 text-white rounded-full dark:text-white dark:hover:bg-gray-700">
+                                  <img class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-xl"
                                     src={auth.user.imgurl.toString()} />
                                   <span class="flex-1 ml-3 whitespace-nowrap">{auth.user.displayname}</span>
                                 </a>
@@ -155,7 +155,7 @@ export default function Root() {
                           </li>
                         </>
                       }
-                      {auth.user.displayname == "none" &&
+                      {auth.user.displayname == "none" && auth.loggedin == false &&
                         <>
                           {/* <li>
                               <a class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700 cursor-pointer" onclick={() => login()}>
