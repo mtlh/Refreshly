@@ -30,7 +30,7 @@ export const getAuth = server$(async (token) => {
                 displayname: "none",
                 email: "none",
                 imgurl: "none",
-                created: new Date.toUTCString()
+                created: "none"
             }};
         }
     }
@@ -49,7 +49,7 @@ export const getAuth = server$(async (token) => {
             displayname: "none",
             email: "none",
             imgurl: "none",
-            created: new Date.toUTCString()
+            created: "none"
         }};
     }
 });

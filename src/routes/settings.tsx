@@ -45,6 +45,7 @@ export default function SettingsPage() {
   });
 
   const handleSubmitPassword = async () => {
+    setPasswordError('');setPasswordSuccess('');
     const checkpassword = server$(async (oldpass, newpass, confpass, username) => {
       if (oldpass && newpass && confpass) {
         if (newpass == confpass) {
@@ -69,10 +70,6 @@ export default function SettingsPage() {
     })
     var error: string = await checkpassword(Currentpassword(), NewPassword(), ConfirmPassword(), username());
     if (error == 'Updated password.') { setPasswordSuccess(error); setPasswordError('') } else { setPasswordError(error); setPasswordSuccess('')}
-    // Handle password change logic here
-    //console.log('Current Password:', Currentpassword());
-    //console.log('New Password:', NewPassword());
-    //console.log('Confirm Password:', ConfirmPassword());
   };
 
   const handleSubmitEmail = () => {

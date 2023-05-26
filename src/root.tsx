@@ -13,21 +13,23 @@ export default function Root() {
   const navigate = useNavigate();
 
   const [checkAuth, setCheckAuth] = createSignal(true)
-  const [auth, setAuth] = createStore({
+  const [isauth, setAuth] = createStore({
     loggedin: false,
     user: {
       username: "",
       displayname: "",
       email: "",
       imgurl: "",
+      created: ""
     }
   });
   //const [auth] = createResource(getAuth);
   createEffect(async () => {
     if (checkAuth() == true) {
-    setAuth(await getAuth(Cookies.get("auth")));
+      setAuth(await getAuth(Cookies.get("auth")));
       setCheckAuth(false);
-      if (auth.loggedin == false && path() != "/login" && path() != "/signup" && path() != "/" ) {
+      console.log(isauth);
+      if (isauth.loggedin == false && path() != "/login" && path() != "/signup" && path() != "/" ) {
         navigate("/login");
       }
     }
@@ -72,7 +74,7 @@ export default function Root() {
                             <span class="ml-3 text-2xl text-white italic">Refreshly</span>
                         </a>
                       </li>
-                      {auth.loggedin == true &&
+                      {isauth.loggedin == true &&
                         <>
                           <li>
                             {path() == "/dashboard" ?
@@ -123,14 +125,14 @@ export default function Root() {
                               {path() == "/profile" ?
                                 <p class="flex items-center p-2 text-black rounded-full bg-white dark:text-white dark:hover:bg-gray-700">
                                   <img class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-xl"
-                                    src={auth.user.imgurl.toString()} />
-                                  <span class="flex-1 ml-3 whitespace-nowrap">{auth.user.displayname}</span>
+                                    src={isauth.user.imgurl.toString()} />
+                                  <span class="flex-1 ml-3 whitespace-nowrap">{isauth.user.displayname}</span>
                                 </p>
                                 :
                                 <a onclick={() => {setCheckAuth(true); navigate("/profile")}} class="cursor-pointer flex items-center p-2 text-white rounded-full dark:text-white dark:hover:bg-gray-700">
                                   <img class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-xl"
-                                    src={auth.user.imgurl.toString()} />
-                                  <span class="flex-1 ml-3 whitespace-nowrap">{auth.user.displayname}</span>
+                                    src={isauth.user.imgurl.toString()} />
+                                  <span class="flex-1 ml-3 whitespace-nowrap">{isauth.user.displayname}</span>
                                 </a>
                               }
                           </li>
@@ -155,7 +157,7 @@ export default function Root() {
                           </li>
                         </>
                       }
-                      {auth.user.displayname == "none" && auth.loggedin == false &&
+                      {isauth.user.displayname == "none" && isauth.loggedin == false &&
                         <>
                           {/* <li>
                               <a class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700 cursor-pointer" onclick={() => login()}>
