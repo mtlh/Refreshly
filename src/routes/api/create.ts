@@ -23,9 +23,10 @@ export async function GET() {
         'displayname VARCHAR(255), '+
         'email VARCHAR(255) NOT NULL, '+
         'pass VARCHAR(255) NOT NULL, '+
-        'imgurl VARCHAR(255), '+
-        'validemail BOOLEAN, '+
-        'token VARCHAR(256) '+
+        'imgurl VARCHAR(255) NOT NULL, '+
+        'validemail BOOLEAN NOT NULL, '+
+        'token VARCHAR(256) NOT NULL, '+
+        'created timestamp NOT NULL DEFAULT now() '+
     ')';
     console.log(auth);
     await conn.execute(auth);

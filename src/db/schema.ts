@@ -1,4 +1,4 @@
-import { boolean, mysqlTable, serial, varchar } from "drizzle-orm/mysql-core";
+import { boolean, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 //npx drizzle-kit generate:mysql --out migrations-folder --schema src/db/schema.ts
 
@@ -18,5 +18,6 @@ export const auth = mysqlTable('auth', {
   pass: varchar('pass', {length: 256}).notNull(),
   imgurl: varchar('imgurl', { length: 256 }).notNull(),
   validemail: boolean('validemail').default(false).notNull(),
-  token: varchar('token', {length: 256}).notNull()
+  token: varchar('token', {length: 256}).notNull(),
+  created: timestamp('created').defaultNow().notNull()
 });

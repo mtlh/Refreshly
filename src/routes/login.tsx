@@ -8,7 +8,7 @@ import { encryptCheck } from "~/functions/encrypt";
 import { generatetoken } from "~/functions/generatetoken";
 import { SignJWT } from 'jose';
 
-const Signup = () => {
+const Login = () => {
     const [username, setUsername] = createSignal("");
     const [pass, setPass] = createSignal("");
     const [errorOutput, setErrorOutput] = createSignal("");
@@ -18,12 +18,9 @@ const Signup = () => {
             if (pass && username) { 
                 const findusername = await db.select().from(auth).where(eq(auth.username, username))
                 if (findusername.length == 1) {
-                    // @ts-ignore
                     const issame = await encryptCheck(pass, findusername[0].pass);
                     if (issame == true) {
-                        // @ts-ignore
                         const key = new TextEncoder().encode(process.env.JWTSECRET);
-                        // @ts-ignore
                         var token = await new SignJWT({ token: generatetoken(100) }).setProtectedHeader({ alg: 'HS256' }).sign(key);
                         const updatetoken = await db.update(auth).set({token: token}).where(eq(auth.username, username)); 
                         return {error: "/dashboard", token: token};
@@ -84,4 +81,4 @@ const Signup = () => {
     );
 };
 
-export default Signup;
+export default Login;

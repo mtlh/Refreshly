@@ -25,9 +25,7 @@ const Signup = () => {
                         const findusername = await db.select().from(auth).where(eq(auth.username, username))
                         if (findusername.length == 0) {
                             const encrypt_pass = await encrypt(pass);
-                            // @ts-ignore
                             const key = new TextEncoder().encode(process.env.JWTSECRET);
-                            // @ts-ignore
                             var token = await new SignJWT({ token: generatetoken(100) }).setProtectedHeader({ alg: 'HS256' }).sign(key);
                             const insertuser = await db.insert(auth).values({username: username, 
                                  displayname: username, email: email, pass: encrypt_pass,

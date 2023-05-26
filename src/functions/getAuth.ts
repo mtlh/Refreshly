@@ -24,13 +24,13 @@ export const getAuth = server$(async (token) => {
             const verifydb = await jwtVerify(getuser[0].token, key);
             decodejwtfromdb = verifydb.payload.token;
             //console.log(decodejwtfromdb);
-            
         } catch {
             return {loggedin: false, user: {
                 username: "none",
                 displayname: "none",
                 email: "none",
                 imgurl: "none",
+                created: new Date.toUTCString()
             }};
         }
     }
@@ -41,6 +41,7 @@ export const getAuth = server$(async (token) => {
             displayname: getuser[0].displayname,
             email: getuser[0].email,
             imgurl: getuser[0].imgurl,
+            created: getuser[0].created.toUTCString()
         }};
     } else {
         return {loggedin: false, user: {
@@ -48,6 +49,7 @@ export const getAuth = server$(async (token) => {
             displayname: "none",
             email: "none",
             imgurl: "none",
+            created: new Date.toUTCString()
         }};
     }
 });
