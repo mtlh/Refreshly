@@ -30,6 +30,9 @@ export default function SettingsPage() {
   const [PasswordError, setPasswordError] = createSignal('');
   const [PasswordSuccess, setPasswordSuccess] = createSignal('');
 
+  const [NewUsername, setNewUsername] = createSignal('');
+  const [isavailable, setAvailable] = createSignal("ring-2 ring-green-500");
+
   const [email, setEmail] = createSignal(isauth.user.email);
   const [username, setUsername] = createSignal(isauth.user.username);
   const [createdAt, setCreatedAt] = createSignal(currenttime);
@@ -46,7 +49,7 @@ export default function SettingsPage() {
 
   const handleSubmitPassword = async () => {
     setPasswordError('');setPasswordSuccess('');
-    const checkpassword = server$(async (oldpass, newpass, confpass, username) => {
+    const checkpassword = server$(async (oldpass: string, newpass: string, confpass: string, username: string) => {
       if (oldpass && newpass && confpass) {
         if (newpass == confpass) {
           const findusername = await db.select().from(auth).where(eq(auth.username, username))
@@ -59,7 +62,7 @@ export default function SettingsPage() {
                   return "Invalid password.";
               }
           } else {
-              return "Username not found.";
+              return "User not found.";
           }
         } else {
           return 'New and confirmation passwords do not match.';
@@ -77,11 +80,75 @@ export default function SettingsPage() {
     console.log('Email changed:', email());
   };
 
-  const handleSubmitUsername = () => {
+  const handleSubmitUsername = async () => {
+    setPasswordError('');setPasswordSuccess('');
+    const checkusername = server$(async (confpass: string, username: string, newusername: string) => {
+      if (newusername && confpass) {
+        if (newusername != username) {
+          const findusername = await db.select().from(auth).where(eq(auth.username, username))
+          if (findusername.length == 1) {
+              const usernametaken = await db.select().from(auth).where(eq(auth.username, newusername))
+              if (usernametaken.length == 0) {
+                const issame = await encryptCheck(confpass, findusername[0].pass);
+                if (issame == true) {
+                  const updateusername = await db.update(auth).set({username: newusername}).where(eq(auth.username, username));
+                  return {error: "Updated username.", username: newusername};
+                } else {
+                    return {error: "Invalid password.", username: newusername};
+                }
+              } else {
+                return {error: "Username is taken.", username: newusername};
+              }
+          } else {
+              return {error: "User not found.", username: newusername};
+          }
+        } else {
+          return {error: 'You have this username.', username: newusername};
+        }
+      } else {
+        return {error: 'Please complete all fields.', username: newusername};
+      }
+    })
+    var error = await checkusername(ConfirmPassword(), username(), NewUsername());
+    if (error.error == 'Updated username.') { setPasswordSuccess(error.error); setPasswordError(''); setUsername(error.username) } else { setPasswordError(error.error); setPasswordSuccess('')}
     // Handle username change logic here
-    console.log('Username changed:', username());
+    console.log('Username changed:', NewUsername());
   };
 
+  async function checkUsername() {
+    let name = NewUsername();
+    const isvalid = server$(async (name) => {
+        const findusername = await db.select().from(auth).where(eq(auth.username, name))
+        if (findusername.length == 0) {
+            return true
+        } else {
+            return false
+        }
+    })
+    const ret = await isvalid(name);
+    if (ret == false) {
+        setAvailable("ring-2 ring-red-500");
+    } else {
+        setAvailable("ring-2 ring-green-500");
+    }
+    return ret;
+  }
+
+  const buttonselect_tailwind = "bg-sky-800 text-white";
+  const [showPassword, setShowPassword] = createSignal({
+    pass: buttonselect_tailwind,
+    username: "",
+    email: ""
+  })
+  function handleShow(type: string) {
+      if (type == 'pass'){
+        setShowPassword({pass: buttonselect_tailwind,username: "",email: ""})
+      } else if (type == 'username') {
+        setShowPassword({pass: "",username: buttonselect_tailwind,email: ""})
+      } else {
+        setShowPassword({pass: "",username: "",email: buttonselect_tailwind})
+      }
+  }
   return (
       <>
         {isauth.loggedin == true &&
@@ -99,90 +166,116 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div class={`mt-8`}>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-                  <div class="p-2">
-                    <label class={`block font-semibold`} for="password">
-                      Confirm existing password
-                    </label>
-                    <input
-                      type="password"
-                      id="currentpassword"
-                      class={`w-full p-2 border border-gray-300 rounded`}
-                      value={Currentpassword()}
-                      onInput={(event) => setCurrentPassword(event.target.value)}
-                    />
+                <ul class="menu menu-horizontal bg-base-100 rounded-box border">
+                  <li><a class={showPassword().pass} onclick={() => handleShow('pass')}>Password</a></li>
+                  <li><a class={showPassword().username} onclick={() => handleShow('username')}>Username</a></li>
+                  <li><a class={showPassword().email} onclick={() => handleShow('email')}>Email</a></li>
+                </ul>
+                { showPassword().pass != "" &&
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-6">
+                    <div class="p-2">
+                      <label class={`block font-semibold`} for="password">
+                        Confirm existing password
+                      </label>
+                      <input
+                        type="password"
+                        id="currentpassword"
+                        class={`w-full p-2 border border-gray-300 rounded`}
+                        value={Currentpassword()}
+                        onInput={(event) => setCurrentPassword(event.target.value)}
+                      />
+                    </div>
+                    <div class="p-2">
+                      <label class={`block font-semibold`} for="password">
+                        Create a new password
+                      </label>
+                      <input
+                        type="password"
+                        id="newpassword"
+                        class={`w-full p-2 border border-gray-300 rounded`}
+                        value={NewPassword()}
+                        onInput={(event) => setNewPassword(event.target.value)}
+                      />
+                      <p class="text-md text-red-500 font-medium m-auto">{PasswordError()}</p>
+                      <p class="text-md text-green-500 font-medium m-auto">{PasswordSuccess()}</p>
+                    </div>
+                    <div class="p-2">
+                      <label class={`block font-semibold`} for="password">
+                        Confirm new password
+                      </label>
+                      <input
+                        type="password"
+                        id="confirmpassword"
+                        class={`w-full p-2 border border-gray-300 rounded`}
+                        value={ConfirmPassword()}
+                        onInput={(event) => setConfirmPassword(event.target.value)}
+                      />
+                      <button
+                        class={`mt-2 px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-600`}
+                        onClick={handleSubmitPassword}
+                      >
+                        Update Password
+                      </button>
+                    </div>
                   </div>
+                }
+                { showPassword().email != "" &&
                   <div class="p-2">
-                    <label class={`block font-semibold`} for="password">
-                      Create a new password
+                    <label class={`block font-semibold`} for="email">
+                      Email
                     </label>
                     <input
-                      type="password"
-                      id="newpassword"
+                      type="email"
+                      id="email"
                       class={`w-full p-2 border border-gray-300 rounded`}
-                      value={NewPassword()}
-                      onInput={(event) => setNewPassword(event.target.value)}
-                    />
-                    <p class="text-md text-red-500 font-medium m-auto">{PasswordError()}</p>
-                    <p class="text-md text-green-500 font-medium m-auto">{PasswordSuccess()}</p>
-                  </div>
-                  <div class="p-2">
-                    <label class={`block font-semibold`} for="password">
-                      Confirm new password
-                    </label>
-                    <input
-                      type="password"
-                      id="confirmpassword"
-                      class={`w-full p-2 border border-gray-300 rounded`}
-                      value={ConfirmPassword()}
-                      onInput={(event) => setConfirmPassword(event.target.value)}
+                      value={email()}
+                      onInput={(event) => setEmail(event.target.value)}
                     />
                     <button
                       class={`mt-2 px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-600`}
-                      onClick={handleSubmitPassword}
+                      onClick={handleSubmitEmail}
                     >
-                      Update Password
+                      Confirm Email
                     </button>
                   </div>
-                </div>
-
-                <div class="p-2">
-                  <label class={`block font-semibold`} for="email">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    class={`w-full p-2 border border-gray-300 rounded`}
-                    value={email()}
-                    onInput={(event) => setEmail(event.target.value)}
-                  />
-                  <button
-                    class={`mt-2 px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-600`}
-                    onClick={handleSubmitEmail}
-                  >
-                    Confirm Email
-                  </button>
-                </div>
-
-                <div class="p-2">
-                  <label class={`block font-semibold`} for="username">
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    id="username"
-                    class={`w-full p-2 border border-gray-300 rounded`}
-                    value={username()}
-                    onInput={(event) => setUsername(event.target.value)}
-                  />
-                  <button
-                    class={`mt-2 px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-600`}
-                    onClick={handleSubmitUsername}
-                  >
-                    Confirm Username
-                  </button>
-                </div>
+                }
+                { showPassword().username != "" &&
+                  <div class="grid grid-cols-1 sm:grid-cols-2">
+                    <div class="p-2">
+                      <label class={`block font-semibold`} for="username">
+                        Confirm existing password
+                      </label>
+                      <input
+                        type="password"
+                        id="confpass_username"
+                        class={`w-full p-2 border border-gray-300 rounded`}
+                        value={ConfirmPassword()}
+                        onInput={(event) => setConfirmPassword(event.target.value)}
+                      />
+                      <p class="text-md text-red-500 font-medium m-auto">{PasswordError()}</p>
+                      <p class="text-md text-green-500 font-medium m-auto">{PasswordSuccess()}</p>
+                    </div>
+                    <div class="p-2">
+                      <label class={`block font-semibold`} for="newusername">
+                        New Username
+                      </label>
+                      <input
+                        type="username"
+                        id="newusername"
+                        class={isavailable() + " w-full p-2 rounded"}
+                        value={NewUsername()}
+                        onInput={(event) => {setNewUsername(event.target.value);checkUsername()}}
+                        placeholder={username()}
+                      />
+                      <button
+                        class={`mt-2 px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-600`}
+                        onClick={handleSubmitUsername}
+                      >
+                        Update Username
+                      </button>
+                    </div>
+                  </div>
+                }
               </div>
             </div>
          </>
