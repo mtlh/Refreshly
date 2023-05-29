@@ -1,5 +1,5 @@
 import Cookies from "js-cookie";
-import { createEffect } from "solid-js";
+import { For, createEffect } from "solid-js";
 import { createStore } from "solid-js/store";
 import { useNavigate } from "solid-start";
 import NotLoggedIn from "~/components/NotLoggedIn";
@@ -8,21 +8,13 @@ import { createSignal } from 'solid-js';
 import server$ from "solid-start/server";
 import { db } from "~/functions/db_client";
 import { eq } from "drizzle-orm";
-import { auth } from "~/db/schema";
+import { auth, customise } from "~/db/schema";
 import { encrypt, encryptCheck } from "~/functions/encrypt";
+import { base_noauth, type baseauthtype } from "~/functions/db_config";
 
 export default function SettingsPage() {
   const currenttime = new Date().toUTCString();
-  const [isauth, setAuth] = createStore({
-    loggedin: false,
-    user: {
-      username: "",
-      displayname: "",
-      email: "",
-      imgurl: "",
-      created: ""
-    }
-  });
+  const [isauth, setAuth] = createStore(base_noauth);
 
   const [Currentpassword, setCurrentPassword] = createSignal('');
   const [NewPassword, setNewPassword] = createSignal('');
@@ -135,20 +127,44 @@ export default function SettingsPage() {
   }
 
   const buttonselect_tailwind = "bg-sky-800 text-white";
+  const nonselected_tailwind = "hover:bg-sky-700 hover:text-white";
   const [showPassword, setShowPassword] = createSignal({
     pass: buttonselect_tailwind,
-    username: "",
-    email: ""
+    username: nonselected_tailwind,
+    email: nonselected_tailwind
   })
   function handleShow(type: string) {
-      if (type == 'pass'){
-        setShowPassword({pass: buttonselect_tailwind,username: "",email: ""})
-      } else if (type == 'username') {
-        setShowPassword({pass: "",username: buttonselect_tailwind,email: ""})
-      } else {
-        setShowPassword({pass: "",username: "",email: buttonselect_tailwind})
-      }
+    setPasswordError('');
+    setPasswordSuccess('');
+    if (type == 'pass'){
+      setShowPassword({pass: buttonselect_tailwind,username: nonselected_tailwind, email: nonselected_tailwind})
+    } else if (type == 'username') {
+      setShowPassword({pass: nonselected_tailwind, username: buttonselect_tailwind, email: nonselected_tailwind})
+    } else {
+      setShowPassword({pass: nonselected_tailwind,username: nonselected_tailwind, email: buttonselect_tailwind})
+    }
   }
+
+  async function updateToggle(key: string) {
+    // @ts-ignore
+    setAuth('custom', key, !isauth.custom[key]);
+    const updatecustom = server$(async (custom: baseauthtype["custom"], token:string|undefined) => {
+      const auth_checked = await getAuth(token);
+      if (auth_checked.loggedin == true) {
+        await db.update(customise).set({
+          dashboard: custom.dashboard,
+          planner: custom.planner,
+          inbox: custom.inbox,
+          teams: custom.teams,
+          projects: custom.projects,
+          profile: custom.profile,
+          settings: custom.settings
+        }).where(eq(customise.username, auth_checked.user.username));
+      }
+    })
+    await updatecustom(isauth.custom, Cookies.get("auth"));
+  }
+
   return (
       <>
         {isauth.loggedin == true &&
@@ -166,12 +182,26 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div class={`mt-8`}>
+                <h2 class="p-2 text-lg font-medium">Customise Navbar:</h2>
+                <div class="grid grid-cols-2 md:grid-cols-7">
+                  <For each={Object.entries(isauth.custom)}>{([key, value]) =>
+                    <label class="relative inline-flex items-center cursor-pointer mx-2 my-6">
+                      <input type="checkbox" class="sr-only peer" checked={value} onchange={() => updateToggle(key)} />
+                      <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-sky-700 dark:peer-focus:ring-sky-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-sky-700"></div>
+                      <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">{key}</span>
+                    </label>
+                  }</For>
+                </div>
+              </div>
+              <div class="divider my-6"></div> 
+              <div class={`mt-8`}>
+                <h2 class="p-2 text-lg font-medium">Change:</h2>
                 <ul class="menu menu-horizontal bg-base-100 rounded-box border">
                   <li><a class={showPassword().pass} onclick={() => handleShow('pass')}>Password</a></li>
                   <li><a class={showPassword().username} onclick={() => handleShow('username')}>Username</a></li>
                   <li><a class={showPassword().email} onclick={() => handleShow('email')}>Email</a></li>
                 </ul>
-                { showPassword().pass != "" &&
+                { showPassword().pass != nonselected_tailwind &&
                   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-6">
                     <div class="p-2">
                       <label class={`block font-semibold`} for="password">
@@ -219,8 +249,8 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 }
-                { showPassword().email != "" &&
-                  <div class="p-2">
+                { showPassword().email != nonselected_tailwind &&
+                  <div class="p-2 mt-6">
                     <label class={`block font-semibold`} for="email">
                       Email
                     </label>
@@ -239,8 +269,8 @@ export default function SettingsPage() {
                     </button>
                   </div>
                 }
-                { showPassword().username != "" &&
-                  <div class="grid grid-cols-1 sm:grid-cols-2">
+                { showPassword().username != nonselected_tailwind &&
+                  <div class="grid grid-cols-1 sm:grid-cols-2 mt-6">
                     <div class="p-2">
                       <label class={`block font-semibold`} for="username">
                         Confirm existing password

@@ -31,6 +31,21 @@ export async function GET() {
     console.log(auth);
     await conn.execute(auth);
 
+    await conn.execute('DROP TABLE IF EXISTS customise');
+    const customise: string = 'CREATE TABLE IF NOT EXISTS customise ( '+
+        'id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, '+
+        'username VARCHAR(255) NOT NULL, '+
+        'dashboard BOOLEAN NOT NULL DEFAULT (true), '+
+        'planner BOOLEAN NOT NULL DEFAULT (true), '+
+        'inbox BOOLEAN NOT NULL DEFAULT (true), '+
+        'teams BOOLEAN NOT NULL DEFAULT (true), '+
+        'projects BOOLEAN NOT NULL DEFAULT (true), '+
+        'profile BOOLEAN NOT NULL DEFAULT (true), '+
+        'settings BOOLEAN NOT NULL DEFAULT (true) '+
+    ')';
+    console.log(customise);
+    await conn.execute(customise);
+
 
     return new Response("Created");
 }

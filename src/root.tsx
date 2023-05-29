@@ -7,28 +7,19 @@ import ToggleProject from "./components/Toggle/ToggleProject";
 import { getAuth } from "./functions/getAuth";
 import Cookies from "js-cookie";
 import { createStore } from "solid-js/store";
+import { base_noauth } from "./functions/db_config";
 
 export default function Root() {
   const [path, setPath] = createSignal(useLocation().pathname);
   const navigate = useNavigate();
 
   const [checkAuth, setCheckAuth] = createSignal(true)
-  const [isauth, setAuth] = createStore({
-    loggedin: false,
-    user: {
-      username: "",
-      displayname: "",
-      email: "",
-      imgurl: "",
-      created: ""
-    }
-  });
+  const [isauth, setAuth] = createStore(base_noauth);
   //const [auth] = createResource(getAuth);
   createEffect(async () => {
     if (checkAuth() == true) {
       setAuth(await getAuth(Cookies.get("auth")));
       setCheckAuth(false);
-      console.log(isauth);
       if (isauth.loggedin == false && path() != "/login" && path() != "/signup" && path() != "/" ) {
         navigate("/login");
       }
@@ -76,79 +67,93 @@ export default function Root() {
                       </li>
                       {isauth.loggedin == true &&
                         <>
-                          <li>
-                            {path() == "/dashboard" ?
-                              <p class="flex items-center p-2 text-black rounded-2xl bg-white dark:text-white dark:hover:bg-gray-700">
-                                <svg aria-hidden="true" class="w-6 h-6 text-black transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path></svg>
-                                <span class="ml-3">Dashboard</span>
-                              </p>
-                              :
-                              <a onclick={() => {setCheckAuth(true); navigate("/dashboard")}} class="cursor-pointer flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
-                                <svg aria-hidden="true" class="w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path></svg>
-                                <span class="ml-3">Dashboard</span>
-                              </a>
-                            }
-                          </li>
-                          <li>
-                            {path() == "/planner" ?
+                          { isauth.custom.dashboard &&
+                            <li>
+                              {path() == "/dashboard" ?
                                 <p class="flex items-center p-2 text-black rounded-2xl bg-white dark:text-white dark:hover:bg-gray-700">
-                                  <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-black transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                                  <span class="flex-1 ml-3 whitespace-nowrap">Planner</span>
-                                  <span class="inline-flex items-center justify-center px-2 ml-3 text-sm font-medium text-gray-800 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300">3</span>
+                                  <svg aria-hidden="true" class="w-6 h-6 text-black transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path></svg>
+                                  <span class="ml-3">Dashboard</span>
                                 </p>
                                 :
-                                <a onclick={() => {setCheckAuth(true); navigate("/planner")}} class="cursor-pointer flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
-                                  <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                                  <span class="flex-1 ml-3 whitespace-nowrap">Planner</span>
-                                  <span class="inline-flex items-center justify-center px-2 ml-3 text-sm font-medium text-gray-800 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300">3</span>
+                                <a onclick={() => {setCheckAuth(true); navigate("/dashboard")}} class="cursor-pointer flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
+                                  <svg aria-hidden="true" class="w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path></svg>
+                                  <span class="ml-3">Dashboard</span>
                                 </a>
                               }
-                          </li>
-                          <li>
-                              {path() == "/inbox" ?
-                                <p class="flex items-center p-2 text-black rounded-2xl bg-white dark:text-white dark:hover:bg-gray-700">
-                                  <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-black transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M8.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l2-2a1 1 0 00-1.414-1.414L11 7.586V3a1 1 0 10-2 0v4.586l-.293-.293z"></path><path d="M3 5a2 2 0 012-2h1a1 1 0 010 2H5v7h2l1 2h4l1-2h2V5h-1a1 1 0 110-2h1a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"></path></svg>
-                                  <span class="flex-1 ml-3 whitespace-nowrap">Inbox</span>
-                                  <span class="inline-flex items-center justify-center w-3 h-3 p-3 ml-3 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300">3</span>
-                                </p>
-                                :
-                                <a onclick={() => {setCheckAuth(true); navigate("/inbox")}} class="cursor-pointer flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
-                                  <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M8.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l2-2a1 1 0 00-1.414-1.414L11 7.586V3a1 1 0 10-2 0v4.586l-.293-.293z"></path><path d="M3 5a2 2 0 012-2h1a1 1 0 010 2H5v7h2l1 2h4l1-2h2V5h-1a1 1 0 110-2h1a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"></path></svg>
-                                  <span class="flex-1 ml-3 whitespace-nowrap">Inbox</span>
-                                  <span class="inline-flex items-center justify-center w-3 h-3 p-3 ml-3 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300">3</span>
-                                </a>
-                              }
-                          </li>
-                          <ToggleTeam />
-                          <ToggleProject />
-                          <li>
-                              {path() == "/profile" ?
-                                <p class="flex items-center p-2 text-black rounded-full bg-white dark:text-white dark:hover:bg-gray-700">
-                                  <img class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-xl"
-                                    src={isauth.user.imgurl.toString()} />
-                                  <span class="flex-1 ml-3 whitespace-nowrap">{isauth.user.displayname}</span>
-                                </p>
-                                :
-                                <a onclick={() => {setCheckAuth(true); navigate("/profile")}} class="cursor-pointer flex items-center p-2 text-white rounded-full dark:text-white dark:hover:bg-gray-700">
-                                  <img class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-xl"
-                                    src={isauth.user.imgurl.toString()} />
-                                  <span class="flex-1 ml-3 whitespace-nowrap">{isauth.user.displayname}</span>
-                                </a>
-                              }
-                          </li>
-                          <li>
-                              {path() == "/settings" ?
-                                <p class="flex items-center p-2 text-black rounded-2xl bg-white dark:text-white dark:hover:bg-gray-700">
-                                  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="flex-shrink-0 w-6 h-6 text-black transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"  stroke="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M56 32a23.74 23.74 0 0 0-.32-3.89L48 25.37 51.5 18a24.41 24.41 0 0 0-5.5-5.5L38.63 16l-2.74-7.68a23.8 23.8 0 0 0-7.78 0L25.37 16 18 12.5a24.41 24.41 0 0 0-5.5 5.5l3.5 7.37-7.68 2.74a23.8 23.8 0 0 0 0 7.78L16 38.63 12.5 46a24.41 24.41 0 0 0 5.5 5.5l7.37-3.5 2.74 7.68a23.8 23.8 0 0 0 7.78 0L38.63 48 46 51.5a24.41 24.41 0 0 0 5.5-5.5L48 38.63l7.68-2.74A23.74 23.74 0 0 0 56 32z"></path><circle cx="32" cy="32" r="4"></circle></g></svg>
-                                  <span class="flex-1 ml-3 whitespace-nowrap">Settings</span>
-                                </p>
-                                :
-                                <a onclick={() => {setCheckAuth(true); navigate("/settings")}} class="cursor-pointer flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
-                                  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"  stroke="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M56 32a23.74 23.74 0 0 0-.32-3.89L48 25.37 51.5 18a24.41 24.41 0 0 0-5.5-5.5L38.63 16l-2.74-7.68a23.8 23.8 0 0 0-7.78 0L25.37 16 18 12.5a24.41 24.41 0 0 0-5.5 5.5l3.5 7.37-7.68 2.74a23.8 23.8 0 0 0 0 7.78L16 38.63 12.5 46a24.41 24.41 0 0 0 5.5 5.5l7.37-3.5 2.74 7.68a23.8 23.8 0 0 0 7.78 0L38.63 48 46 51.5a24.41 24.41 0 0 0 5.5-5.5L48 38.63l7.68-2.74A23.74 23.74 0 0 0 56 32z"></path><circle cx="32" cy="32" r="4"></circle></g></svg>
-                                  <span class="flex-1 ml-3 whitespace-nowrap">Settings</span>
-                                </a>
-                              }
-                          </li>
+                            </li>
+                          }
+                          { isauth.custom.planner &&
+                            <li>
+                              {path() == "/planner" ?
+                                  <p class="flex items-center p-2 text-black rounded-2xl bg-white dark:text-white dark:hover:bg-gray-700">
+                                    <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-black transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                                    <span class="flex-1 ml-3 whitespace-nowrap">Planner</span>
+                                    <span class="inline-flex items-center justify-center px-2 ml-3 text-sm font-medium text-gray-800 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300">3</span>
+                                  </p>
+                                  :
+                                  <a onclick={() => {setCheckAuth(true); navigate("/planner")}} class="cursor-pointer flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
+                                    <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                                    <span class="flex-1 ml-3 whitespace-nowrap">Planner</span>
+                                    <span class="inline-flex items-center justify-center px-2 ml-3 text-sm font-medium text-gray-800 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300">3</span>
+                                  </a>
+                                }
+                            </li>
+                          }
+                          { isauth.custom.inbox &&
+                            <li>
+                                {path() == "/inbox" ?
+                                  <p class="flex items-center p-2 text-black rounded-2xl bg-white dark:text-white dark:hover:bg-gray-700">
+                                    <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-black transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M8.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l2-2a1 1 0 00-1.414-1.414L11 7.586V3a1 1 0 10-2 0v4.586l-.293-.293z"></path><path d="M3 5a2 2 0 012-2h1a1 1 0 010 2H5v7h2l1 2h4l1-2h2V5h-1a1 1 0 110-2h1a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"></path></svg>
+                                    <span class="flex-1 ml-3 whitespace-nowrap">Inbox</span>
+                                    <span class="inline-flex items-center justify-center w-3 h-3 p-3 ml-3 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300">3</span>
+                                  </p>
+                                  :
+                                  <a onclick={() => {setCheckAuth(true); navigate("/inbox")}} class="cursor-pointer flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
+                                    <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M8.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l2-2a1 1 0 00-1.414-1.414L11 7.586V3a1 1 0 10-2 0v4.586l-.293-.293z"></path><path d="M3 5a2 2 0 012-2h1a1 1 0 010 2H5v7h2l1 2h4l1-2h2V5h-1a1 1 0 110-2h1a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"></path></svg>
+                                    <span class="flex-1 ml-3 whitespace-nowrap">Inbox</span>
+                                    <span class="inline-flex items-center justify-center w-3 h-3 p-3 ml-3 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300">3</span>
+                                  </a>
+                                }
+                            </li>
+                          }
+                          { isauth.custom.teams &&
+                            <ToggleTeam />
+                          }
+                          { isauth.custom.projects &&
+                            <ToggleProject />
+                          }
+                          { isauth.custom.profile &&
+                            <li>
+                                {path() == "/profile" ?
+                                  <p class="flex items-center p-2 text-black rounded-full bg-white dark:text-white dark:hover:bg-gray-700">
+                                    <img class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-xl"
+                                      src={isauth.user.imgurl.toString()} />
+                                    <span class="flex-1 ml-3 whitespace-nowrap">{isauth.user.displayname}</span>
+                                  </p>
+                                  :
+                                  <a onclick={() => {setCheckAuth(true); navigate("/profile")}} class="cursor-pointer flex items-center p-2 text-white rounded-full dark:text-white dark:hover:bg-gray-700">
+                                    <img class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-xl"
+                                      src={isauth.user.imgurl.toString()} />
+                                    <span class="flex-1 ml-3 whitespace-nowrap">{isauth.user.displayname}</span>
+                                  </a>
+                                }
+                            </li>
+                          }
+                          { isauth.custom.settings &&
+                            <li>
+                                {path() == "/settings" ?
+                                  <p class="flex items-center p-2 text-black rounded-2xl bg-white dark:text-white dark:hover:bg-gray-700">
+                                    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="flex-shrink-0 w-6 h-6 text-black transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"  stroke="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M56 32a23.74 23.74 0 0 0-.32-3.89L48 25.37 51.5 18a24.41 24.41 0 0 0-5.5-5.5L38.63 16l-2.74-7.68a23.8 23.8 0 0 0-7.78 0L25.37 16 18 12.5a24.41 24.41 0 0 0-5.5 5.5l3.5 7.37-7.68 2.74a23.8 23.8 0 0 0 0 7.78L16 38.63 12.5 46a24.41 24.41 0 0 0 5.5 5.5l7.37-3.5 2.74 7.68a23.8 23.8 0 0 0 7.78 0L38.63 48 46 51.5a24.41 24.41 0 0 0 5.5-5.5L48 38.63l7.68-2.74A23.74 23.74 0 0 0 56 32z"></path><circle cx="32" cy="32" r="4"></circle></g></svg>
+                                    <span class="flex-1 ml-3 whitespace-nowrap">Settings</span>
+                                  </p>
+                                  :
+                                  <a onclick={() => {setCheckAuth(true); navigate("/settings")}} class="cursor-pointer flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
+                                    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"  stroke="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M56 32a23.74 23.74 0 0 0-.32-3.89L48 25.37 51.5 18a24.41 24.41 0 0 0-5.5-5.5L38.63 16l-2.74-7.68a23.8 23.8 0 0 0-7.78 0L25.37 16 18 12.5a24.41 24.41 0 0 0-5.5 5.5l3.5 7.37-7.68 2.74a23.8 23.8 0 0 0 0 7.78L16 38.63 12.5 46a24.41 24.41 0 0 0 5.5 5.5l7.37-3.5 2.74 7.68a23.8 23.8 0 0 0 7.78 0L38.63 48 46 51.5a24.41 24.41 0 0 0 5.5-5.5L48 38.63l7.68-2.74A23.74 23.74 0 0 0 56 32z"></path><circle cx="32" cy="32" r="4"></circle></g></svg>
+                                    <span class="flex-1 ml-3 whitespace-nowrap">Settings</span>
+                                  </a>
+                                }
+                            </li>
+                          }
                           <li>
                               <a class="flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700 cursor-pointer" onclick={() => {Cookies.remove("auth"); setCheckAuth(true); navigate("/login")}}>
                                 <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"></path></svg>
