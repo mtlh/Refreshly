@@ -35,7 +35,16 @@ export const customise = mysqlTable('customise', {
 });
 
 export const planner = mysqlTable('planner', {
-  id: serial('id').primaryKey().notNull(),
+  givenid: serial('id').primaryKey().notNull(),
   username: varchar('username', {length: 256}).notNull(),
-  taskname: varchar('taskname', {length: 256})
+  name: varchar('taskname', {length: 256}).notNull(),
+  type: varchar('type', {length: 256}).notNull(),
+  order: varchar('order', {length: 256}),
+  group: varchar('group', {length: 256}),
+  startdate: timestamp('startdate').defaultNow(),
+  duedate: timestamp('duedate'),
+  progress: varchar('progress', {length: 256}),
+  description: varchar('description', {length: 256}),
+  checklist: varchar('checklist', {length: 999999999999999}),
+  priority: varchar('prority', {length: 256})
 });

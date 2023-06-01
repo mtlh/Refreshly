@@ -1,5 +1,4 @@
 // @ts-nocheck
-
 import {
   DragDropProvider,
   DragDropSensors,
@@ -18,14 +17,19 @@ import { batch, For, onMount, VoidComponent } from "solid-js";
 import { createStore } from "solid-js/store";
 import Big from "big.js";
 
-export const ORDER_DELTA = 1000;
+export const ORDER_DELTA = 1;
+export const ID_DELTA = 1;
+
+interface checklist {
+  checked: boolean,
+  content: string
+}
 
 interface Base {
   id: Id;
   name: string;
   type: "group" | "item";
   order: string;
-  color?: string;
 }
 
 interface Group extends Base {
@@ -35,6 +39,12 @@ interface Group extends Base {
 interface Item extends Base {
   type: "item";
   group: Id;
+  startdate?: Date;
+  duedate?: Date;
+  progress: "" | "Not Started" | "Ongoing" | "Complete";
+  description: string;
+  checklist: checklist[];
+  priority: "High" | "Medium" | "Low" | "Urgent" | "";
 }
 
 type Entity = Group | Item;
@@ -45,71 +55,42 @@ const sortByOrder = (entities: Entity[]) => {
   return sorted.map((entry) => entry.item);
 };
 
-const Item: VoidComponent<{
-  id: Id;
-  name: string;
-  group: Id;
-}> = (props) => {
-  const sortable = createSortable(props.id, {
+const Item = (item: Item) => {
+  const sortable = createSortable(item.id, {
     type: "item",
-    group: props.group,
+    group: item.group,
   });
   return (
     <>
-      <div
+      <label
+        for={item.id}
+      >
+        <div
         use:sortable
         class="sortable bg-sky-400 rounded-2xl p-2 m-2 text-center"
         classList={{ "opacity-25": sortable.isActiveDraggable }}
-      >
-        {props.name}
-      </div>
-      {/* Put this part before </body> tag */}
-      <input type="checkbox" id={props.name} className="modal-toggle" />
-      <label htmlFor={props.name} className="modal cursor-pointer">
-        <label className="modal-box relative" htmlFor="">
-          <h3 className="text-lg font-bold">Congratulations random Internet user!</h3>
-          <p className="py-4">You've been selected for a chance to get one year of subscription to use Wikipedia for free!</p>
+        >
+          {item.name}
+        </div>
+      </label>
+      <input type="checkbox" id={item.id} class="modal-toggle" />
+      <label for={item.id} class="modal cursor-pointer">
+        <label class="modal-box relative" for="">
+          <h3 class="text-lg font-bold">{item.name}</h3>
+          <p class="py-4">id: {item.id} group: {item.group} order: {item.order} progress: {item.progress}</p>
         </label>
       </label>
-      <label htmlFor={props.name} className="btn">open modal</label>
+      {/* <label htmlFor={props.name} className="btn">open modal</label> */}
     </>
     
 
   );
 };
 
-const ItemOverlay: VoidComponent<{ name: string }> = (props) => {
+const ItemOverlay = (props: Item) => {
   return <div class="sortable bg-sky-400 rounded-2xl p-2 m-2 text-center">{props.name}</div>;
 };
 
-const Group: VoidComponent<{ id: Id; name: string; items: Item[] }> = (
-  props
-) => {
-  const sortable = createSortable(props.id, { type: "group" });
-  const sortedItemIds = () => props.items.map((item) => item.id);
-
-  return (
-    <div
-      ref={sortable.ref}
-      style={maybeTransformStyle(sortable.transform)}
-      classList={{ "opacity-25": sortable.isActiveDraggable }}
-    >
-      <div class="column-header text-2xl mb-2" {...sortable.dragActivators}>
-        {props.name}
-      </div>
-      <div class="column cursor-move">
-        <SortableProvider ids={sortedItemIds()}>
-          <For each={props.items}>
-            {(item) => (
-              <Item id={item.id} name={item.name} group={item.group} />
-            )}
-          </For>
-        </SortableProvider>
-      </div>
-      <p>ADD ITEM</p>
-    </div>
-  );
-};
 
 const GroupOverlay: VoidComponent<{ name: string; items: Item[] }> = (
   props
@@ -119,7 +100,7 @@ const GroupOverlay: VoidComponent<{ name: string; items: Item[] }> = (
       <div class="column-header text-2xl mb-2" onDblClick={""}>{props.name}</div>
       <div class="column cursor-move">
         <For each={props.items}>
-          {(item) => <ItemOverlay name={item.name} />}
+          {(item) => <ItemOverlay {...item} />}
         </For>
       </div>
     </div>
@@ -130,46 +111,90 @@ export const BoardExample = () => {
   const [entities, setEntities] = createStore<Record<Id, Entity>>({});
 
   let nextOrder = 0;
+  let nextID = 0;
+
+  const getNextID = () => {
+    nextID += ID_DELTA;
+    return nextID;
+  }
 
   const getNextOrder = () => {
     nextOrder += ORDER_DELTA;
     return nextOrder.toString();
   };
 
-  const addGroup = (id: Id, name: string, color?: string) => {
+  const addGroup = (name: string) => {
+    let id = getNextID();
     setEntities(id, {
       id,
       name,
-      color: color,
       type: "group",
       order: getNextOrder(),
     });
   };
 
-  const addItem = (id: Id, name: string, group: Id, color?: string) => {
+  const addItem = (name: string, group: Id, colour?: string, startdate?: Date, duedate?: Date, progress: "" | "Not Started" | "Ongoing" | "Complete",
+    description: string, checklist: checklist[], priority: "High" | "Medium" | "Low" | "Urgent" | "") => {
+    let id = getNextID();
     setEntities(id, {
       id,
       name,
       group,
-      color: color,
+      colour,
+      startdate,
+      duedate,
+      priority,
+      description,
+      checklist,
+      progress,
       type: "item",
       order: getNextOrder(),
     });
   };
 
+  const Group: VoidComponent<{ id: Id; name: string; items: Item[] }> = (
+    props
+  ) => {
+    const sortable = createSortable(props.id, { type: "group" });
+    const sortedItemIds = () => props.items.map((item) => item.id);
+    return (
+      <div
+        ref={sortable.ref}
+        style={maybeTransformStyle(sortable.transform)}
+        classList={{ "opacity-25": sortable.isActiveDraggable }}
+      >
+        <div class="column-header text-2xl mb-2" {...sortable.dragActivators}>
+          {props.name}
+        </div>
+        <div class="column cursor-move">
+          <SortableProvider ids={sortedItemIds()}>
+            <For each={props.items}>
+              {(item) => (
+                <Item {...item} />
+              )}
+            </For>
+          </SortableProvider>
+        </div>
+        <button onClick={()=> {addItem("New Task", props.id)}}>ADD ITEM</button>
+      </div>
+    );
+  };
+
   const setup = () => {
     batch(() => {
-      addGroup(1, "Todo");
-      addGroup(2, "In Progress");
-      addGroup(3, "Done");
-      addItem(4, "Make waves.", 1);
-      addItem(5, "Party!", 1);
-      addItem(6, "Meet friends.", 2);
-      addItem(7, "Do shopping.", 3);
+      addGroup("Group 1");
+      addGroup("Group 2");
+      addGroup("Group 3");
+      addItem("Task 1", 1, undefined, Date, Date, "", "", [], "");
+      addItem("Task 2", 1);
+      addItem("Task 3", 2);
+      addItem("Task 4", 3);
     });
   };
 
   onMount(setup);
+
+  console.log(entities);
 
   const groups = () =>
     sortByOrder(
@@ -315,7 +340,7 @@ export const BoardExample = () => {
     <div class="grid grid-cols-3 mt-5 self-stretch">
       <DragDropProvider
         onDragOver={onDragOver}
-        onDragEnd={onDragEnd}
+        onDragEnd={(e)=> {onDragEnd(e); console.log(entities)}}
         collisionDetector={closestEntity}
       >
         <DragDropSensors />
