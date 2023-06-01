@@ -1,4 +1,4 @@
-import { boolean, json, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, json, mysqlDatabase, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 //npx drizzle-kit generate:mysql --out migrations-folder --schema src/db/schema.ts
 
@@ -32,4 +32,10 @@ export const customise = mysqlTable('customise', {
   projects: boolean('projects').notNull().default(true),
   profile: boolean('profile').notNull().default(true),
   settings: boolean('settings').notNull().default(true)
-})
+});
+
+export const planner = mysqlTable('planner', {
+  id: serial('id').primaryKey().notNull(),
+  username: varchar('username', {length: 256}).notNull(),
+  taskname: varchar('taskname', {length: 256})
+});

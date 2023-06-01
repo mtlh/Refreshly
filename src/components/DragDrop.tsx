@@ -55,13 +55,26 @@ const Item: VoidComponent<{
     group: props.group,
   });
   return (
-    <div
-      use:sortable
-      class="sortable bg-sky-400 rounded-2xl p-2 m-2 text-center"
-      classList={{ "opacity-25": sortable.isActiveDraggable }}
-    >
-      {props.name}
-    </div>
+    <>
+      <div
+        use:sortable
+        class="sortable bg-sky-400 rounded-2xl p-2 m-2 text-center"
+        classList={{ "opacity-25": sortable.isActiveDraggable }}
+      >
+        {props.name}
+      </div>
+      {/* Put this part before </body> tag */}
+      <input type="checkbox" id={props.name} className="modal-toggle" />
+      <label htmlFor={props.name} className="modal cursor-pointer">
+        <label className="modal-box relative" htmlFor="">
+          <h3 className="text-lg font-bold">Congratulations random Internet user!</h3>
+          <p className="py-4">You've been selected for a chance to get one year of subscription to use Wikipedia for free!</p>
+        </label>
+      </label>
+      <label htmlFor={props.name} className="btn">open modal</label>
+    </>
+    
+
   );
 };
 
@@ -93,6 +106,7 @@ const Group: VoidComponent<{ id: Id; name: string; items: Item[] }> = (
           </For>
         </SortableProvider>
       </div>
+      <p>ADD ITEM</p>
     </div>
   );
 };
@@ -308,11 +322,13 @@ export const BoardExample = () => {
           <SortableProvider ids={groupIds()}>
             <For each={groups()}>
               {(group) => (
-                <Group
-                  id={group.id}
-                  name={group.name}
-                  items={groupItems(group.id)}
-                />
+                <>
+                  <Group
+                    id={group.id}
+                    name={group.name}
+                    items={groupItems(group.id)}
+                  />
+                </>
               )}
             </For>
           </SortableProvider>

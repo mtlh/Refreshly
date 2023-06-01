@@ -41,11 +41,12 @@ export default function SettingsPage() {
 
   const handleSubmitPassword = async () => {
     setPasswordError('');setPasswordSuccess('');
-    const checkpassword = server$(async (oldpass: string, newpass: string, confpass: string, username: string) => {
+    const checkpassword = server$(async (oldpass: string, newpass: string, confpass: string, username: string, token) => {
       if (oldpass && newpass && confpass) {
         if (newpass == confpass) {
-          const findusername = await db.select().from(auth).where(eq(auth.username, username))
-          if (findusername.length == 1) {
+          const findusername = await db.select().from(auth).where(eq(auth.username, username));
+          const authcheck = await getAuth(token);
+          if (findusername.length == 1 && authcheck.loggedin == true) {
               const issame = await encryptCheck(oldpass, findusername[0].pass);
               if (issame == true) {
                 const updatetoken = await db.update(auth).set({pass: await encrypt(newpass)}).where(eq(auth.username, username)); 
@@ -54,7 +55,7 @@ export default function SettingsPage() {
                   return "Invalid password.";
               }
           } else {
-              return "User not found.";
+              return "User is not authenticated.";
           }
         } else {
           return 'New and confirmation passwords do not match.';
@@ -63,7 +64,7 @@ export default function SettingsPage() {
         return 'Please complete all fields.'
       }
     })
-    var error: string = await checkpassword(Currentpassword(), NewPassword(), ConfirmPassword(), username());
+    var error: string = await checkpassword(Currentpassword(), NewPassword(), ConfirmPassword(), username(), Cookies.get("auth"));
     if (error == 'Updated password.') { setPasswordSuccess(error); setPasswordError('') } else { setPasswordError(error); setPasswordSuccess('')}
   };
 
@@ -74,11 +75,12 @@ export default function SettingsPage() {
 
   const handleSubmitUsername = async () => {
     setPasswordError('');setPasswordSuccess('');
-    const checkusername = server$(async (confpass: string, username: string, newusername: string) => {
+    const checkusername = server$(async (confpass: string, username: string, newusername: string, token: string|undefined) => {
       if (newusername && confpass) {
         if (newusername != username) {
-          const findusername = await db.select().from(auth).where(eq(auth.username, username))
-          if (findusername.length == 1) {
+          const findusername = await db.select().from(auth).where(eq(auth.username, username));
+          const authcheck = await getAuth(token);
+          if (findusername.length == 1 && authcheck.loggedin == true) {
               const usernametaken = await db.select().from(auth).where(eq(auth.username, newusername))
               if (usernametaken.length == 0) {
                 const issame = await encryptCheck(confpass, findusername[0].pass);
@@ -92,7 +94,7 @@ export default function SettingsPage() {
                 return {error: "Username is taken.", username: newusername};
               }
           } else {
-              return {error: "User not found.", username: newusername};
+              return {error: "User is not authenticated.", username: newusername};
           }
         } else {
           return {error: 'You have this username.', username: newusername};
@@ -101,7 +103,7 @@ export default function SettingsPage() {
         return {error: 'Please complete all fields.', username: newusername};
       }
     })
-    var error = await checkusername(ConfirmPassword(), username(), NewUsername());
+    var error = await checkusername(ConfirmPassword(), username(), NewUsername(), Cookies.get("auth"));
     if (error.error == 'Updated username.') { setPasswordSuccess(error.error); setPasswordError(''); setUsername(error.username) } else { setPasswordError(error.error); setPasswordSuccess('')}
     // Handle username change logic here
     console.log('Username changed:', NewUsername());
@@ -136,6 +138,7 @@ export default function SettingsPage() {
   function handleShow(type: string) {
     setPasswordError('');
     setPasswordSuccess('');
+    setConfirmPassword('');
     if (type == 'pass'){
       setShowPassword({pass: buttonselect_tailwind,username: nonselected_tailwind, email: nonselected_tailwind})
     } else if (type == 'username') {
@@ -181,19 +184,6 @@ export default function SettingsPage() {
                   <h2 class={`text-lg font-medium`}>{createdAt()}</h2>
                 </div>
               </div>
-              <div class={`mt-8`}>
-                <h2 class="p-2 text-lg font-medium">Customise Navbar:</h2>
-                <div class="grid grid-cols-2 md:grid-cols-7">
-                  <For each={Object.entries(isauth.custom)}>{([key, value]) =>
-                    <label class="relative inline-flex items-center cursor-pointer mx-2 my-6">
-                      <input type="checkbox" class="sr-only peer" checked={value} onchange={() => updateToggle(key)} />
-                      <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-sky-700 dark:peer-focus:ring-sky-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-sky-700"></div>
-                      <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">{key}</span>
-                    </label>
-                  }</For>
-                </div>
-              </div>
-              <div class="divider my-6"></div> 
               <div class={`mt-8`}>
                 <h2 class="p-2 text-lg font-medium">Change:</h2>
                 <ul class="menu menu-horizontal bg-base-100 rounded-box border">
@@ -307,6 +297,20 @@ export default function SettingsPage() {
                   </div>
                 }
               </div>
+              <div class="divider my-6"></div>
+              <div class={`mt-8`}>
+                <h2 class="p-2 text-lg font-medium">Customise Navbar:</h2>
+                <div class="grid grid-cols-2 md:grid-cols-7">
+                  <For each={Object.entries(isauth.custom)}>{([key, value]) =>
+                    <label class="relative inline-flex items-center cursor-pointer mx-2 my-6">
+                      <input type="checkbox" class="sr-only peer" checked={value} onchange={() => updateToggle(key)} />
+                      <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-sky-700 dark:peer-focus:ring-sky-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-sky-700"></div>
+                      <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">{key}</span>
+                    </label>
+                  }</For>
+                </div>
+              </div>
+              <div class="divider my-6"></div> 
             </div>
          </>
        }
