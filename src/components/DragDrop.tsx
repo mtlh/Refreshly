@@ -13,9 +13,15 @@ import {
   Droppable,
   CollisionDetector,
 } from "@thisbeyond/solid-dnd";
-import { batch, For, onMount, VoidComponent } from "solid-js";
+import { batch, For, onMount, VoidComponent} from "solid-js";
 import { createStore } from "solid-js/store";
 import Big from "big.js";
+import Cookies from "js-cookie";
+import server$ from "solid-start/server";
+import { getAuth } from "~/functions/getAuth";
+import { db } from "~/functions/db_client";
+import { and, eq } from "drizzle-orm";
+import { planner } from "~/db/schema";
 
 export const ORDER_DELTA = 1;
 export const ID_DELTA = 1;
@@ -26,7 +32,7 @@ interface checklist {
 }
 
 interface Base {
-  id: Id;
+  id: number;
   name: string;
   type: "group" | "item";
   order: string;
@@ -38,7 +44,7 @@ interface Group extends Base {
 
 interface Item extends Base {
   type: "item";
-  group: Id;
+  group: number;
   startdate?: Date;
   duedate?: Date;
   progress: "" | "Not Started" | "Ongoing" | "Complete";
@@ -63,7 +69,7 @@ const Item = (item: Item) => {
   return (
     <>
       <label
-        for={item.id}
+        for={item.id.toString()}
       >
         <div
         use:sortable
@@ -73,8 +79,8 @@ const Item = (item: Item) => {
           {item.name}
         </div>
       </label>
-      <input type="checkbox" id={item.id} class="modal-toggle" />
-      <label for={item.id} class="modal cursor-pointer">
+      <input type="checkbox" id={item.id.toString()} class="modal-toggle" />
+      <label for={item.id.toString()} class="modal cursor-pointer">
         <label class="modal-box relative" for="">
           <h3 class="text-lg font-bold">{item.name}</h3>
           <p class="py-4">id: {item.id} group: {item.group} order: {item.order} progress: {item.progress}</p>
@@ -123,24 +129,83 @@ export const BoardExample = () => {
     return nextOrder.toString();
   };
 
-  const addGroup = (name: string) => {
-    let id = getNextID();
+  const saveEntities = async () => {
+    const db_insert_entities = server$(async (entities: Entity[], token:string|undefined) => {
+      const auth_checked = await getAuth(token);
+      if (auth_checked.loggedin == true) {
+        for (var x in entities) {
+          if (entities[x].type == "item") {
+            // @ts-ignore
+            let item: Item = entities[x];
+            const checktasks = await db.select().from(planner).where(and(eq(planner.id, item.id), eq(planner.username, auth_checked.user.username)))
+            if (checktasks.length > 0) {
+              const updatetasks = await db.update(planner).set({
+                name: item.name,
+                ordernum: item.order,
+                groupid: item.group,
+                startdate: item.startdate,
+                duedate: item.duedate,
+                progress: item.progress,
+                description: item.description,
+                checklist: JSON.stringify(item.checklist),
+                priority: item.priority
+              }).where(and(eq(planner.id, item.id), eq(planner.username, auth_checked.user.username)))
+            } else {
+              const inserttasks = await db.insert(planner).values({
+                username: auth_checked.user.username,
+                id: item.id,
+                name: item.name,
+                type: item.type,
+                ordernum: item.order,
+                groupid: item.group,
+                startdate: item.startdate,
+                duedate: item.duedate,
+                progress: item.progress,
+                description: item.description,
+                checklist: JSON.stringify(item.checklist),
+                priority: item.priority
+              });
+            }
+          } else {
+            // @ts-ignore
+            let group: Group = entities[x];
+            const checkgroup = await db.select().from(planner).where(and(eq(planner.id, group.id), eq(planner.username, auth_checked.user.username)))
+            if (checkgroup.length > 0) {
+              const updategroups = await db.update(planner).set({
+                name: group.name,
+                ordernum: group.order
+              }).where(and(eq(planner.id, group.id), eq(planner.username, auth_checked.user.username)))
+            } else {
+              const updategroups = await db.insert(planner).values({
+                username: auth_checked.user.username,
+                id: group.id,
+                name: group.name,
+                type: group.type,
+                ordernum: group.order
+              });
+            }
+          }
+        }
+      }
+    })
+    await db_insert_entities(entities, Cookies.get("auth"));
+  }
+
+  const addGroup = (id: number, name: string, order: string) => {
     setEntities(id, {
       id,
       name,
       type: "group",
-      order: getNextOrder(),
+      order,
     });
   };
 
-  const addItem = (name: string, group: Id, colour?: string, startdate?: Date, duedate?: Date, progress: "" | "Not Started" | "Ongoing" | "Complete",
+  const addItem = (id: number, order: string, name: string, group: Id, startdate?: Date, duedate?: Date, progress: "" | "Not Started" | "Ongoing" | "Complete",
     description: string, checklist: checklist[], priority: "High" | "Medium" | "Low" | "Urgent" | "") => {
-    let id = getNextID();
     setEntities(id, {
       id,
       name,
       group,
-      colour,
       startdate,
       duedate,
       priority,
@@ -148,7 +213,7 @@ export const BoardExample = () => {
       checklist,
       progress,
       type: "item",
-      order: getNextOrder(),
+      order,
     });
   };
 
@@ -175,26 +240,52 @@ export const BoardExample = () => {
             </For>
           </SortableProvider>
         </div>
-        <button onClick={()=> {addItem("New Task", props.id)}}>ADD ITEM</button>
+        <button onClick={()=> {addItem(getNextID() , getNextOrder(), "New Task", props.id); saveEntities()}} class="bg-grey-100 text-2xl rounded-2xl w-[96%] text-black p-1 hover:ring-2">+</button>
       </div>
     );
   };
 
+  const getEntities = async () => {
+    const getAllEntities = server$(async (token:string|undefined) => {
+      const auth_checked = await getAuth(token);
+      if (auth_checked.loggedin == true) {
+        const userplanner = await db.select().from(planner).where(eq(planner.username, auth_checked.user.username));
+        return userplanner;
+      } else {
+        return null;
+      }
+    })
+    const planneritems = await getAllEntities(Cookies.get("auth"));
+    console.log(planneritems);
+    if (planneritems?.length == 0) {
+      addGroup(getNextID(), "Group 1", getNextOrder());
+      addGroup(getNextID(), "Group 2", getNextOrder());
+      addGroup(getNextID(), "Group 3", getNextOrder());
+      addItem(getNextID(), getNextOrder(), "Task 1", 1);
+      addItem(getNextID(), getNextOrder(), "Task 2", 1);
+      addItem(getNextID(), getNextOrder(), "Task 3", 2);
+      addItem(getNextID(), getNextOrder(), "Task 4", 3);
+    } else {
+      for (var entity in planneritems) {
+        if (planneritems[entity].type == "item") {
+          addItem(planneritems[entity].id, planneritems[entity].ordernum, planneritems[entity].name, planneritems[entity].groupid, planneritems[entity].startdate
+          , planneritems[entity].duedate, planneritems[entity].progress, planneritems[entity].description, JSON.parse(planneritems[entity].checklist), planneritems[entity].priority)
+        } else {
+          addGroup(planneritems[entity].id, planneritems[entity].name, planneritems[entity].ordernum)
+        }
+        nextOrder += 1;
+        nextID += 1; 
+      }
+    }
+  }
+
   const setup = () => {
     batch(() => {
-      addGroup("Group 1");
-      addGroup("Group 2");
-      addGroup("Group 3");
-      addItem("Task 1", 1, undefined, Date, Date, "", "", [], "");
-      addItem("Task 2", 1);
-      addItem("Task 3", 2);
-      addItem("Task 4", 3);
+      getEntities();
     });
   };
 
   onMount(setup);
-
-  console.log(entities);
 
   const groups = () =>
     sortByOrder(
@@ -340,7 +431,7 @@ export const BoardExample = () => {
     <div class="grid grid-cols-3 mt-5 self-stretch">
       <DragDropProvider
         onDragOver={onDragOver}
-        onDragEnd={(e)=> {onDragEnd(e); console.log(entities)}}
+        onDragEnd={(e)=> {onDragEnd(e); saveEntities()}}
         collisionDetector={closestEntity}
       >
         <DragDropSensors />

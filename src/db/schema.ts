@@ -1,4 +1,4 @@
-import { boolean, json, mysqlDatabase, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, int, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 //npx drizzle-kit generate:mysql --out migrations-folder --schema src/db/schema.ts
 
@@ -37,14 +37,15 @@ export const customise = mysqlTable('customise', {
 export const planner = mysqlTable('planner', {
   givenid: serial('id').primaryKey().notNull(),
   username: varchar('username', {length: 256}).notNull(),
-  name: varchar('taskname', {length: 256}).notNull(),
+  id: int('id').notNull(),
+  name: varchar('name', {length: 256}),
   type: varchar('type', {length: 256}).notNull(),
   ordernum: varchar('ordernum', {length: 256}),
-  groupid: varchar('groupid', {length: 256}),
+  groupid: int('groupid'),
   startdate: timestamp('startdate').defaultNow(),
   duedate: timestamp('duedate'),
   progress: varchar('progress', {length: 256}),
   description: varchar('description', {length: 256}),
   checklist: varchar('checklist', {length: 999999999999999}),
-  priority: varchar('prority', {length: 256})
+  priority: varchar('priority', {length: 256})
 });

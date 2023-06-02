@@ -5,16 +5,16 @@ const conn = connect(config);
 
 export async function GET() {
 
-    await conn.execute('DROP TABLE IF EXISTS users');
-    const users: string = 'CREATE TABLE IF NOT EXISTS users ( '+
-        'id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, '+
-        'username VARCHAR(255) NOT NULL, '+
-        'name VARCHAR(255) NOT NULL, '+
-        'email VARCHAR(255) NOT NULL, '+
-        'imgurl VARCHAR(255) NOT NULL '+
-    ')';
-    console.log(users);
-    await conn.execute(users);
+    // await conn.execute('DROP TABLE IF EXISTS users');
+    // const users: string = 'CREATE TABLE IF NOT EXISTS users ( '+
+    //     'id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, '+
+    //     'username VARCHAR(255) NOT NULL, '+
+    //     'name VARCHAR(255) NOT NULL, '+
+    //     'email VARCHAR(255) NOT NULL, '+
+    //     'imgurl VARCHAR(255) NOT NULL '+
+    // ')';
+    // console.log(users);
+    // await conn.execute(users);
 
     await conn.execute('DROP TABLE IF EXISTS auth');
     const auth: string = 'CREATE TABLE IF NOT EXISTS auth ( '+
@@ -50,6 +50,8 @@ export async function GET() {
     const planner: string = 'CREATE TABLE IF NOT EXISTS planner ( '+
         'givenid INT PRIMARY KEY AUTO_INCREMENT NOT NULL, '+
         'username VARCHAR(255) NOT NULL, '+
+        'id INTEGER NOT NULL, '+
+        'name VARCHAR(255), '+
         'type VARCHAR(255) NOT NULL, '+
         'ordernum VARCHAR(255), '+
         'groupid VARCHAR(255), '+
