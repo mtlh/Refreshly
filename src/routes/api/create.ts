@@ -25,7 +25,7 @@ export async function GET() {
         'pass VARCHAR(255) NOT NULL, '+
         'imgurl VARCHAR(255) NOT NULL, '+
         'validemail BOOLEAN NOT NULL, '+
-        'token VARCHAR(256) NOT NULL, '+
+        'token VARCHAR(255) NOT NULL, '+
         'created timestamp NOT NULL DEFAULT now() '+
     ')';
     console.log(auth);
@@ -46,6 +46,22 @@ export async function GET() {
     console.log(customise);
     await conn.execute(customise);
 
+    await conn.execute('DROP TABLE IF EXISTS planner');
+    const planner: string = 'CREATE TABLE IF NOT EXISTS planner ( '+
+        'givenid INT PRIMARY KEY AUTO_INCREMENT NOT NULL, '+
+        'username VARCHAR(255) NOT NULL, '+
+        'type VARCHAR(255) NOT NULL, '+
+        'ordernum VARCHAR(255), '+
+        'groupid VARCHAR(255), '+
+        'startdate timestamp, '+
+        'duedate timestamp, '+
+        'progress VARCHAR(255), '+
+        'description VARCHAR(255), '+
+        'checklist TEXT, '+
+        'priority VARCHAR(255) '+
+    ')';
+    console.log(planner);
+    await conn.execute(planner);
 
     return new Response("Created");
 }
