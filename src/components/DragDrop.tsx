@@ -256,7 +256,6 @@ export const BoardExample = () => {
       }
     })
     const planneritems = await getAllEntities(Cookies.get("auth"));
-    console.log(planneritems);
     if (planneritems?.length == 0) {
       addGroup(getNextID(), "Group 1", getNextOrder());
       addGroup(getNextID(), "Group 2", getNextOrder());
