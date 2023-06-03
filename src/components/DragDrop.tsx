@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   DragDropProvider,
   DragDropSensors,
@@ -22,6 +21,7 @@ import { getAuth } from "~/functions/getAuth";
 import { db } from "~/functions/db_client";
 import { and, eq } from "drizzle-orm";
 import { planner } from "~/db/schema";
+import { useNavigate } from "solid-start";
 
 export const ORDER_DELTA = 1;
 export const ID_DELTA = 1;
@@ -61,38 +61,6 @@ const sortByOrder = (entities: Entity[]) => {
   return sorted.map((entry) => entry.item);
 };
 
-const Item = (item: Item) => {
-  const sortable = createSortable(item.id, {
-    type: "item",
-    group: item.group,
-  });
-  return (
-    <>
-      <label
-        for={item.id.toString()}
-      >
-        <div
-        use:sortable
-        class="sortable bg-sky-400 rounded-2xl p-2 m-2 text-center"
-        classList={{ "opacity-25": sortable.isActiveDraggable }}
-        >
-          {item.name}
-        </div>
-      </label>
-      <input type="checkbox" id={item.id.toString()} class="modal-toggle" />
-      <label for={item.id.toString()} class="modal cursor-pointer">
-        <label class="modal-box relative" for="">
-          <h3 class="text-lg font-bold">{item.name}</h3>
-          <p class="py-4">id: {item.id} group: {item.group} order: {item.order} progress: {item.progress}</p>
-        </label>
-      </label>
-      {/* <label htmlFor={props.name} className="btn">open modal</label> */}
-    </>
-    
-
-  );
-};
-
 const ItemOverlay = (props: Item) => {
   return <div class="sortable bg-sky-400 rounded-2xl p-2 m-2 text-center">{props.name}</div>;
 };
@@ -114,6 +82,7 @@ const GroupOverlay: VoidComponent<{ name: string; items: Item[] }> = (
 };
 
 export const BoardExample = () => {
+  const nav = useNavigate();
   const [entities, setEntities] = createStore<Record<Id, Entity>>({});
 
   let nextOrder = 0;
@@ -129,6 +98,57 @@ export const BoardExample = () => {
     return nextOrder.toString();
   };
 
+  const Item = (item: Item) => {
+    const sortable = createSortable(item.id, {
+      type: "item",
+      group: item.group,
+    });
+    return (
+      <>
+        <label
+          for={item.id.toString()}
+        >
+          <div
+          use:sortable
+          class="sortable bg-sky-400 rounded-2xl p-2 m-2 text-center"
+          classList={{ "opacity-25": sortable.isActiveDraggable }}
+          >
+            {item.name}
+          </div>
+        </label>
+        <input type="checkbox" id={item.id.toString()} class="modal-toggle" />
+        <label for={item.id.toString()} class="modal cursor-pointer">
+          <label class="modal-box relative" for="">
+            <h3 class="text-lg font-bold">{item.name}</h3>
+            <p class="py-4">id: {item.id} group: {item.group} order: {item.order} progress: {item.progress}</p>
+            <button onclick={() => deletetask(item.id)}>DELETE TASK</button>
+          </label>
+        </label>
+        {/* <label htmlFor={props.name} className="btn">open modal</label> */}
+      </>
+      
+  
+    );
+  };
+
+  const deletetask = async (itemid: number) => {
+    const DeleteFromPlanner = server$(async (removeid: number, entities: Entity[], token:string|undefined) => {
+      const auth_checked = await getAuth(token);
+      let newarr = [];
+      if (auth_checked.loggedin == true) {
+        for (var x in entities) {
+          if (entities[x].id == removeid) {
+            await db.delete(planner).where(and(eq(planner.id, entities[x].id), eq(planner.username, auth_checked.user.username)));
+          } else {
+            newarr.push(entities[x]);
+          }
+        }
+      }
+      return newarr;
+    })
+    const newarr = await DeleteFromPlanner(itemid, entities, Cookies.get("auth"));
+    location.reload();
+  }
   const saveEntities = async () => {
     const db_insert_entities = server$(async (entities: Entity[], token:string|undefined) => {
       const auth_checked = await getAuth(token);
@@ -285,6 +305,8 @@ export const BoardExample = () => {
   };
 
   onMount(setup);
+
+  console.log(entities);
 
   const groups = () =>
     sortByOrder(

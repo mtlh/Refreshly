@@ -172,7 +172,7 @@ export default function SettingsPage() {
       <>
         {isauth.loggedin == true &&
          <>
-            <div class={`max-w-md sm:max-w-2xl md:max-w-3xl lg:max-w-6xl mx-auto p-4`}>
+            <div class={`max-w-md sm:max-w-2xl md:max-w-3xl lg:max-w-6xl xl:max-w-full mx-auto p-4`}>
               <div class={`items-center space-y-4 flex`}>
                 <img
                   src={isauth.user.imgurl}// Replace with actual profile picture URL
