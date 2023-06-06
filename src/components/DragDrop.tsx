@@ -12,7 +12,7 @@ import {
   Droppable,
   CollisionDetector,
 } from "@thisbeyond/solid-dnd";
-import { batch, For, onMount, VoidComponent} from "solid-js";
+import { batch, createSignal, For, onMount, Show, VoidComponent} from "solid-js";
 import { createStore } from "solid-js/store";
 import Big from "big.js";
 import Cookies from "js-cookie";
@@ -85,8 +85,8 @@ export const BoardExample = () => {
   const nav = useNavigate();
   const [entities, setEntities] = createStore<Record<Id, Entity>>({});
 
-  let nextOrder = 0;
-  let nextID = 0;
+  let nextOrder = 1;
+  let nextID = 1;
 
   const getNextID = () => {
     nextID += ID_DELTA;
@@ -110,21 +110,29 @@ export const BoardExample = () => {
         >
           <div
           use:sortable
-          class="sortable bg-sky-400 rounded-2xl p-2 m-2 text-center"
+          class="sortable bg-gray-100 rounded-sm p-2 m-2 text-left ring-1 ring-gray-300 shadow-lg container relative"
           classList={{ "opacity-25": sortable.isActiveDraggable }}
           >
-            {item.name}
+            <p class="text-lg text-black font-normal w-full mb-10">{item.name}</p>
+            <ul>
+              <For each={item.checklist}>{(checklist, i) =>
+                <li>
+                  <p>{checklist.checked}</p>
+                  <p>{checklist.content}</p>
+                </li>
+              }</For> 
+            </ul>
+            <p class="absolute bottom-0 left-0 p-2 italic">04/06/2023 {item.duedate?.getUTCDate()}</p>
           </div>
         </label>
         <input type="checkbox" id={item.id.toString()} class="modal-toggle" />
         <label for={item.id.toString()} class="modal cursor-pointer">
-          <label class="modal-box relative" for="">
+          <label class="modal-box relative rounded-sm" for="">
             <h3 class="text-lg font-bold">{item.name}</h3>
             <p class="py-4">id: {item.id} group: {item.group} order: {item.order} progress: {item.progress}</p>
             <button onclick={() => deletetask(item.id)}>DELETE TASK</button>
           </label>
         </label>
-        {/* <label htmlFor={props.name} className="btn">open modal</label> */}
       </>
       
   
@@ -296,6 +304,7 @@ export const BoardExample = () => {
         nextID += 1; 
       }
     }
+    console.log(entities, nextID)
   }
 
   const setup = () => {
@@ -305,8 +314,6 @@ export const BoardExample = () => {
   };
 
   onMount(setup);
-
-  console.log(entities);
 
   const groups = () =>
     sortByOrder(
@@ -449,7 +456,7 @@ export const BoardExample = () => {
     move(draggable, droppable, false);
 
   return (
-    <div class="grid grid-cols-3 mt-5 self-stretch">
+    <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 mt-5 gap-2 self-stretch">
       <DragDropProvider
         onDragOver={onDragOver}
         onDragEnd={(e)=> {onDragEnd(e); saveEntities()}}
