@@ -10,10 +10,7 @@
     "@types/bcryptjs": "^2.4.2",
     "@types/big.js": "^6.1.6",
     "@types/js-cookie": "^3.0.3",
-    "@types/jsonwebtoken": "^9.0.2",
     "@types/node": "^20.1.2",
-    "@types/react-datepicker": "^4.11.2",
-    "@types/react-flatpickr": "^3.8.8",
     "autoprefixer": "^10.4.13",
     "drizzle-kit": "^0.17.6",
     "postcss": "^8.4.21",
@@ -23,8 +20,6 @@
     "vite": "^4.1.4"
   },
   "dependencies": {
-    "@auth/core": "^0.2.5",
-    "@auth/solid-start": "^0.1.1",
     "@planetscale/database": "^1.7.0",
     "@solidjs/meta": "^0.28.2",
     "@solidjs/router": "^0.8.2",

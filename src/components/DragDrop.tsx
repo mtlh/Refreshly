@@ -12,7 +12,7 @@ import {
   Droppable,
   CollisionDetector,
 } from "@thisbeyond/solid-dnd";
-import { batch, createSignal, For, onMount, Show, VoidComponent} from "solid-js";
+import { batch, For, onMount, VoidComponent} from "solid-js";
 import { createStore } from "solid-js/store";
 import Big from "big.js";
 import Cookies from "js-cookie";
@@ -103,39 +103,52 @@ export const BoardExample = () => {
       type: "item",
       group: item.group,
     });
+    var checked_count = 0;
+    for (var x in item.checklist) { checked_count += 1;};
+    const [itemstore, setItemStore] = createStore(item);
     return (
       <>
         <label
-          for={item.id.toString()}
+          for={itemstore.id.toString()}
         >
           <div
           use:sortable
-          class="sortable bg-gray-100 rounded-sm p-2 m-2 text-left ring-1 ring-gray-300 shadow-lg container relative"
+          class="sortable bg-gray-100 rounded-lg p-2 m-2 text-left ring-1 ring-gray-300 shadow-lg container relative"
           classList={{ "opacity-25": sortable.isActiveDraggable }}
           >
-            <p class="text-lg text-black font-normal w-full mb-10">{item.name}</p>
+            <p class="text-lg text-black font-normal w-full mb-6">{itemstore.name}</p>
+            {itemstore.checklist &&
+              <p class="text-md text-black font-normal text-left mb-2">{checked_count}/{itemstore.checklist.length}</p>
+            }
             <ul>
-              <For each={item.checklist}>{(checklist, i) =>
+              <For each={itemstore.checklist}>{(checklist, i) =>
                 <li>
                   <p>{checklist.checked}</p>
                   <p>{checklist.content}</p>
                 </li>
               }</For> 
             </ul>
-            <p class="absolute bottom-0 left-0 p-2 italic">04/06/2023 {item.duedate?.getUTCDate()}</p>
+            { itemstore.duedate?.getUTCDate() ? 
+              <p class="absolute bottom-0 left-0 p-2 italic">{itemstore.duedate?.getUTCDate()}</p>
+              :
+              <p class="absolute bottom-0 left-0 p-2 italic">Unscheduled</p>
+            }
           </div>
         </label>
-        <input type="checkbox" id={item.id.toString()} class="modal-toggle" />
-        <label for={item.id.toString()} class="modal cursor-pointer">
-          <label class="modal-box relative rounded-sm" for="">
-            <h3 class="text-lg font-bold">{item.name}</h3>
-            <p class="py-4">id: {item.id} group: {item.group} order: {item.order} progress: {item.progress}</p>
-            <button onclick={() => deletetask(item.id)}>DELETE TASK</button>
+        <input type="checkbox" id={itemstore.id.toString()} class="modal-toggle" />
+        <label for={itemstore.id.toString()} class="modal cursor-pointer">
+          <label class="modal-box relative rounded-lg" for="">
+            <h3 class="text-lg font-bold">{itemstore.name}</h3>
+            <p class="py-2">id: {itemstore.id}</p>
+            <p class="py-2">group: {itemstore.group}</p>
+            <p class="py-2">order: {itemstore.order}</p>
+            <p class="py-2">progress: {itemstore.progress}</p>
+            <p class="py-2">priority: {itemstore.priority}</p>
+            <input class="py-2" value={itemstore.name} onChange={(e) => {setItemStore("name", e.target.value); setEntities(itemstore.id, itemstore); saveEntities()}}/>
+            <button onclick={() => deletetask(itemstore.id)}>DELETE TASK</button>
           </label>
         </label>
       </>
-      
-  
     );
   };
 
@@ -300,8 +313,10 @@ export const BoardExample = () => {
         } else {
           addGroup(planneritems[entity].id, planneritems[entity].name, planneritems[entity].ordernum)
         }
+        if (planneritems[entity].id >= nextID) {
+          nextID = (planneritems[entity].id + 1); 
+        }
         nextOrder += 1;
-        nextID += 1; 
       }
     }
     console.log(entities, nextID)
