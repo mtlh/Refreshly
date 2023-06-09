@@ -22,6 +22,7 @@ import { db } from "~/functions/db_client";
 import { and, eq } from "drizzle-orm";
 import { planner } from "~/db/schema";
 import { useNavigate } from "solid-start";
+import moment from "moment";
 
 export const ORDER_DELTA = 1;
 export const ID_DELTA = 1;
@@ -45,8 +46,8 @@ interface Group extends Base {
 interface Item extends Base {
   type: "item";
   group: number;
-  startdate?: Date;
-  duedate?: Date;
+  startdate?: string;
+  duedate?: string;
   progress: "" | "Not Started" | "Ongoing" | "Complete";
   description: string;
   checklist: checklist[];
@@ -128,8 +129,8 @@ export const BoardExample = () => {
                 </li>
               }</For> 
             </ul>
-            { itemstore.duedate?.getUTCDate() ? 
-              <p class="absolute bottom-0 left-0 p-2 italic">{itemstore.duedate?.getUTCDate()}</p>
+            { itemstore.duedate ?
+              <p class="absolute bottom-0 left-0 p-2 italic">{moment(itemstore.duedate).format("DD-MM-YYYY")}</p>
               :
               <p class="absolute bottom-0 left-0 p-2 italic">Unscheduled</p>
             }
@@ -137,15 +138,27 @@ export const BoardExample = () => {
         </label>
         <input type="checkbox" id={itemstore.id.toString()} class="modal-toggle" />
         <label for={itemstore.id.toString()} class="modal cursor-pointer">
-          <label class="modal-box relative rounded-lg" for="">
-            <h3 class="text-lg font-bold">{itemstore.name}</h3>
+          <label class="modal-box relative rounded-lg w-5/6 h-3/4" for="">
+            <input class="py-2 w-3/4 text-center text-lg font-bold" value={itemstore.name} onChange={(e) => {setItemStore("name", e.target.value); setEntities(itemstore.id, itemstore); saveEntities()}}/>
             <p class="py-2">id: {itemstore.id}</p>
             <p class="py-2">group: {itemstore.group}</p>
             <p class="py-2">order: {itemstore.order}</p>
-            <p class="py-2">progress: {itemstore.progress}</p>
-            <p class="py-2">priority: {itemstore.priority}</p>
-            <input class="py-2" value={itemstore.name} onChange={(e) => {setItemStore("name", e.target.value); setEntities(itemstore.id, itemstore); saveEntities()}}/>
-            <button onclick={() => deletetask(itemstore.id)}>DELETE TASK</button>
+            <input type="date" class="w-3/4 my-2 rounded-lg" value={itemstore.duedate} onChange={(e) => {setItemStore("duedate", e.target.value); setEntities(itemstore.id, itemstore); saveEntities()}} />
+            <input type="date" class="w-3/4 my-2 rounded-lg" value={itemstore.startdate} onChange={(e) => {setItemStore("startdate", e.target.value); setEntities(itemstore.id, itemstore); saveEntities()}} />
+            <select class="select select-bordered w-3/4 my-2" value={itemstore.progress} onChange={(e) => {setItemStore("progress", e.target.value); setEntities(itemstore.id, itemstore); saveEntities()}}>
+              <option>Completed</option>
+              <option>Ongoing</option>
+              <option>Not Started</option>
+              <option></option>
+            </select>
+            <select class="select select-bordered w-3/4 my-2" value={itemstore.priority} onChange={(e) => {setItemStore("priority", e.target.value); setEntities(itemstore.id, itemstore); saveEntities()}}>
+              <option>Urgent</option>
+              <option>High</option>
+              <option>Medium</option>
+              <option>Low</option>
+              <option></option>
+            </select>
+            <button onclick={() => deletetask(itemstore.id)} class="py-2 w-3/4 bg-red-500 text-white rounded-lg hover:bg-red-700">DELETE TASK</button>
           </label>
         </label>
       </>
@@ -184,8 +197,8 @@ export const BoardExample = () => {
                 name: item.name,
                 ordernum: item.order,
                 groupid: item.group,
-                startdate: item.startdate,
-                duedate: item.duedate,
+                startdate: moment(item.startdate).format("YYYY-MM-DD"),
+                duedate: moment(item.duedate).format("YYYY-MM-DD"),
                 progress: item.progress,
                 description: item.description,
                 checklist: JSON.stringify(item.checklist),
@@ -199,8 +212,8 @@ export const BoardExample = () => {
                 type: item.type,
                 ordernum: item.order,
                 groupid: item.group,
-                startdate: item.startdate,
-                duedate: item.duedate,
+                startdate: moment(item.startdate).format("YYYY-MM-DD"),
+                duedate: moment(item.duedate).format("YYYY-MM-DD"),
                 progress: item.progress,
                 description: item.description,
                 checklist: JSON.stringify(item.checklist),
@@ -301,10 +314,6 @@ export const BoardExample = () => {
       addGroup(getNextID(), "Group 1", getNextOrder());
       addGroup(getNextID(), "Group 2", getNextOrder());
       addGroup(getNextID(), "Group 3", getNextOrder());
-      addItem(getNextID(), getNextOrder(), "Task 1", 1);
-      addItem(getNextID(), getNextOrder(), "Task 2", 1);
-      addItem(getNextID(), getNextOrder(), "Task 3", 2);
-      addItem(getNextID(), getNextOrder(), "Task 4", 3);
     } else {
       for (var entity in planneritems) {
         if (planneritems[entity].type == "item") {
@@ -319,7 +328,6 @@ export const BoardExample = () => {
         nextOrder += 1;
       }
     }
-    console.log(entities, nextID)
   }
 
   const setup = () => {
@@ -416,7 +424,7 @@ export const BoardExample = () => {
       return;
     }
 
-    let ids, orders, order;
+    let ids, orders, order: Big | undefined;
 
     if (draggableIsGroup) {
       ids = groupIds();
@@ -471,37 +479,44 @@ export const BoardExample = () => {
     move(draggable, droppable, false);
 
   return (
-    <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 mt-5 gap-2 self-stretch">
-      <DragDropProvider
-        onDragOver={onDragOver}
-        onDragEnd={(e)=> {onDragEnd(e); saveEntities()}}
-        collisionDetector={closestEntity}
-      >
-        <DragDropSensors />
-          <SortableProvider ids={groupIds()}>
-            <For each={groups()}>
-              {(group) => (
-                <>
-                  <Group
-                    id={group.id}
-                    name={group.name}
-                    items={groupItems(group.id)}
-                  />
-                </>
-              )}
-            </For>
-          </SortableProvider>
-        <DragOverlay>
-          {(draggable) => {
-            const entity = entities[draggable.id];
-            return isSortableGroup(draggable) ? (
-              <GroupOverlay name={entity.name} items={groupItems(entity.id)} />
-            ) : (
-              <ItemOverlay name={entity.name} />
-            );
-          }}
-        </DragOverlay>
-      </DragDropProvider>
-    </div>
+    <>
+      <div class="w-full mb-4 text-right">
+        <button class="m-auto ">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="flex-shrink-0 w-8 h-8 text-gray-400 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"  stroke="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M56 32a23.74 23.74 0 0 0-.32-3.89L48 25.37 51.5 18a24.41 24.41 0 0 0-5.5-5.5L38.63 16l-2.74-7.68a23.8 23.8 0 0 0-7.78 0L25.37 16 18 12.5a24.41 24.41 0 0 0-5.5 5.5l3.5 7.37-7.68 2.74a23.8 23.8 0 0 0 0 7.78L16 38.63 12.5 46a24.41 24.41 0 0 0 5.5 5.5l7.37-3.5 2.74 7.68a23.8 23.8 0 0 0 7.78 0L38.63 48 46 51.5a24.41 24.41 0 0 0 5.5-5.5L48 38.63l7.68-2.74A23.74 23.74 0 0 0 56 32z"></path><circle cx="32" cy="32" r="4"></circle></g></svg>
+        </button>
+      </div>
+      <div class={"grid grid-cols-2 md:grid-cols-2 mt-5 gap-2 self-stretch lg:grid-cols-3"}>
+        <DragDropProvider
+          onDragOver={onDragOver}
+          onDragEnd={(e)=> {onDragEnd(e); saveEntities()}}
+          collisionDetector={closestEntity}
+        >
+          <DragDropSensors />
+            <SortableProvider ids={groupIds()}>
+              <For each={groups()}>
+                {(group) => (
+                  <>
+                    <Group
+                      id={group.id}
+                      name={group.name}
+                      items={groupItems(group.id)}
+                    />
+                  </>
+                )}
+              </For>
+            </SortableProvider>
+          <DragOverlay>
+            {(draggable) => {
+              const entity = entities[draggable.id];
+              return isSortableGroup(draggable) ? (
+                <GroupOverlay name={entity.name} items={groupItems(entity.id)} />
+              ) : (
+                <ItemOverlay name={entity.name} />
+              );
+            }}
+          </DragOverlay>
+        </DragDropProvider>
+      </div>
+    </>
   );
 };

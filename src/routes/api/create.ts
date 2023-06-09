@@ -55,8 +55,8 @@ export async function GET() {
         'type VARCHAR(255) NOT NULL, '+
         'ordernum VARCHAR(255), '+
         'groupid VARCHAR(255), '+
-        'startdate timestamp, '+
-        'duedate timestamp, '+
+        'startdate DATE, '+
+        'duedate DATE, '+
         'progress VARCHAR(255), '+
         'description VARCHAR(255), '+
         'checklist TEXT, '+

@@ -1,4 +1,4 @@
-import { boolean, int, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, date, int, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 //npx drizzle-kit generate:mysql --out migrations-folder --schema src/db/schema.ts
 
@@ -42,8 +42,8 @@ export const planner = mysqlTable('planner', {
   type: varchar('type', {length: 256}).notNull(),
   ordernum: varchar('ordernum', {length: 256}),
   groupid: int('groupid'),
-  startdate: timestamp('startdate').defaultNow(),
-  duedate: timestamp('duedate'),
+  startdate: varchar('startdate', {length: 256}),
+  duedate: varchar('duedate', {length: 256}),
   progress: varchar('progress', {length: 256}),
   description: varchar('description', {length: 256}),
   checklist: varchar('checklist', {length: 999999999999999}),
