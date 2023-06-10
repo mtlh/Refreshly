@@ -57,7 +57,7 @@ export default function Root() {
       <Body>
         <Suspense>
           <ErrorBoundary>
-            <script src="..\node_modules\flowbite\dist\flowbite.min.js"></script>
+            <script type="text/babel" src="..\node_modules\flowbite\dist\flowbite.min.js" />
             <main>
               <div class="lg:hidden top-0 w-full fixed bg-sky-900">
                 <button data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="fixed items-center p-2 mt-2 ml-3 text-sm text-white rounded-lg lg:hidden focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">

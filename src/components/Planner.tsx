@@ -11,8 +11,9 @@ import {
   Draggable,
   Droppable,
   CollisionDetector,
+  useDragDropContext,
 } from "@thisbeyond/solid-dnd";
-import { batch, For, onMount, VoidComponent} from "solid-js";
+import { batch, createSignal, For, onMount, VoidComponent} from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import Big from "big.js";
 import Cookies from "js-cookie";
@@ -28,7 +29,6 @@ export const ORDER_DELTA = 1;
 export const ID_DELTA = 1;
 
 interface checklist {
-  id: number,
   checked: boolean,
   content: string
 }
@@ -68,7 +68,6 @@ const ItemOverlay = (props: Item) => {
   return <div class="sortable bg-sky-400 rounded-2xl p-2 m-2 text-center">{props.name}</div>;
 };
 
-
 const GroupOverlay: VoidComponent<{ name: string; items: Item[] }> = (
   props
 ) => {
@@ -107,9 +106,62 @@ export const BoardExample = () => {
       group: item.group,
     });
     var checked_count = 0;
-    for (var x in item.checklist) { if ( item.checklist[x].checked == false ) {checked_count += 1; }};
-    const [itemstore, setItemStore] = createStore(item);
-    setItemStore("checklist", [{id: 1, checked: true, content: "test"}]);
+    for (var x in item.checklist) { if (item.checklist[x].checked) {checked_count += 1; }};
+    const [itemstore, setItemStore] = createStore(item);    
+    const createIdsArray = (items: checklist[]): number[] => {
+      return items.map((item, index) => index);
+    };
+    console.log(itemstore.checklist);
+    let startidarray: number[] = [];
+    if (itemstore.checklist != null && itemstore.checklist != undefined) {
+      startidarray = createIdsArray(itemstore.checklist);
+    }
+    const [items, setItems] = createSignal(startidarray);
+    console.log(items());
+    const [activeItem, setActiveItem] = createSignal(null);
+    const ids = () => items();
+    const ChecklistonDragStart = ({ draggable }: any) => setActiveItem(draggable.id);
+    const ChecklistonDragEnd = ({ draggable, droppable }: any) => {
+      if (draggable && droppable) {
+        const currentItems = ids();
+        const fromIndex = currentItems.indexOf(draggable.id);
+        const toIndex = currentItems.indexOf(droppable.id);
+        if (fromIndex !== toIndex) {
+          const updatedItems = currentItems.slice();
+          updatedItems.splice(toIndex, 0, ...updatedItems.splice(fromIndex, 1));
+          setItems(updatedItems);
+          const rearrangeItemsArray = (items: checklist[], ids: number[]): checklist[] => {
+            return ids.map(id => items[id]);
+          };
+          const rearrange = rearrangeItemsArray(itemstore.checklist, updatedItems);
+          setItemStore("checklist", rearrange);
+          setItemStore("lastupdate", new Date());
+          setEntities(itemstore.id, itemstore);
+          setItems(createIdsArray(itemstore.checklist));
+          saveEntities();
+        }
+      }
+  };
+  const Sortable = (props: any) => {
+    const sortable = createSortable(props.item);
+    const [state] = useDragDropContext();
+    return (
+      <div class="grid grid-cols-12 sortable" use:sortable classList={{"opacity-80": sortable.isActiveDraggable, "transition-transform": !!state.active.draggable}}>
+        <div class="col-span-2 m-auto">
+          {itemstore.checklist[props.item].checked ?
+            <svg fill="#000000" version="1.1" width={"18%"} class="m-auto" id="Capa_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 490 490"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <polygon points="452.253,28.326 197.831,394.674 29.044,256.875 0,292.469 207.253,461.674 490,54.528 "></polygon> </g></svg>
+            :
+            <svg fill="#000000" width={"18%"} class="m-auto" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M0 14.545L1.455 16 8 9.455 14.545 16 16 14.545 9.455 8 16 1.455 14.545 0 8 6.545 1.455 0 0 1.455 6.545 8z" fill-rule="evenodd"></path> </g></svg>
+          }
+        </div>
+        <input
+        class="input my-1 w-full text-sm col-span-10 m-auto"
+        value={itemstore.checklist[props.item].content}
+        onchange={(e)=> {setItemStore("checklist", props.item, {checked: itemstore.checklist[props.item].checked, content: e.target.value}); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities() }}
+       />
+      </div>
+    );
+  };
     return (
       <>
         <label
@@ -129,7 +181,6 @@ export const BoardExample = () => {
                 <li>
                   <p>{checklist.checked}</p>
                   <p>{checklist.content}</p>
-                  <p>{checklist.id}</p>
                 </li>
               }</For> 
             </ul>
@@ -193,13 +244,25 @@ export const BoardExample = () => {
                 <span class="label-text">Checklist:</span>
               </label>
               <ul>
-                <For each={item.checklist}>{(checklist, i) =>
-                  <li>
-                    <p>{checklist.checked}</p>
-                    <input class="input h-full rounded-lg" type="text" value={checklist.content} onChange={(e) => {}} />
-                  </li>
-                }</For>
-                <button onClick={() => {setItemStore("checklist", l => [...l, {id: 3, checked: false, content: "test2"}])}} class="text-lg">+</button>
+                <DragDropProvider
+                  onDragStart={ChecklistonDragStart}
+                  onDragEnd={ChecklistonDragEnd}
+                  collisionDetector={closestCenter}
+                >
+                  <DragDropSensors />
+                  <div class="column self-stretch">
+                    <SortableProvider ids={ids()}>
+                      <For each={items()}>{(item) => <Sortable item={item} />}</For>
+                    </SortableProvider>
+                  </div>
+                  <DragOverlay>
+                    <div class="sortable">{activeItem()}</div>
+                  </DragOverlay>
+                </DragDropProvider>
+                <button onClick={() => {try {setItemStore("checklist", l => [...l, {checked: false, content: "new checklist"}])}catch{setItemStore("checklist", [{checked: false, content: "new checklist"}])}; setItems(createIdsArray(itemstore.checklist)); setItems(createIdsArray(itemstore.checklist)); setEntities(itemstore.id, itemstore); saveEntities()}} 
+                  class="text-lg my-4 font-bold">
+                  +
+                </button>
               </ul>
             </div>
             <button onclick={() => deletetask(itemstore.id)} class="py-1 w-full bg-red-500 text-white rounded-lg hover:bg-red-700">DELETE TASK</button>
@@ -250,7 +313,7 @@ export const BoardExample = () => {
                 description: item.description,
                 checklist: JSON.stringify(item.checklist),
                 priority: item.priority,
-                lastupdate: new Date()
+                lastupdate: new Date(item.lastupdate)
               }).where(and(eq(planner.id, item.id), eq(planner.username, auth_checked.user.username)))
             } else {
               const inserttasks = await db.insert(planner).values({
@@ -266,7 +329,7 @@ export const BoardExample = () => {
                 description: item.description,
                 checklist: JSON.stringify(item.checklist),
                 priority: item.priority,
-                lastupdate: new Date()
+                lastupdate: new Date(item.lastupdate)
               });
             }
           } else {
@@ -305,6 +368,9 @@ export const BoardExample = () => {
 
   const addItem = (id: number, order: string, name: string, group: number, startdate?: string, duedate?: string, progress: any,
     description: string, checklist: checklist[], priority: "High" | "Medium" | "Low" | "Urgent" | "", lastupdate:  string) => {
+    if (!lastupdate) {
+      lastupdate = moment(new Date()).format("HH:mm DD-MM-YYYY").toString()
+    }
     setEntities(id, {
       id,
       name,
