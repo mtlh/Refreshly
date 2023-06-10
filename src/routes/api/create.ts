@@ -60,7 +60,8 @@ export async function GET() {
         'progress VARCHAR(255), '+
         'description VARCHAR(255), '+
         'checklist TEXT, '+
-        'priority VARCHAR(255) '+
+        'priority VARCHAR(255), '+
+        'lastupdate TIMESTAMP NOT NULL DEFAULT now() '+
     ')';
     console.log(planner);
     await conn.execute(planner);

@@ -1,4 +1,4 @@
-import { BoardExample } from "~/components/DragDrop";
+import { BoardExample } from "~/components/Planner";
 
 export default function Planner() {
   return (

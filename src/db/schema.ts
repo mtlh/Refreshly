@@ -47,5 +47,6 @@ export const planner = mysqlTable('planner', {
   progress: varchar('progress', {length: 256}),
   description: varchar('description', {length: 256}),
   checklist: varchar('checklist', {length: 999999999999999}),
-  priority: varchar('priority', {length: 256})
+  priority: varchar('priority', {length: 256}),
+  lastupdate: timestamp('lastupdate').onUpdateNow().notNull()
 });
