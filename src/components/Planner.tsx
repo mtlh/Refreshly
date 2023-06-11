@@ -13,7 +13,7 @@ import {
   CollisionDetector,
   useDragDropContext,
 } from "@thisbeyond/solid-dnd";
-import { batch, createSignal, For, onMount, VoidComponent} from "solid-js";
+import { batch, createEffect, createSignal, For, onMount, VoidComponent} from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import Big from "big.js";
 import Cookies from "js-cookie";
@@ -105,19 +105,21 @@ export const BoardExample = () => {
       type: "item",
       group: item.group,
     });
-    var checked_count = 0;
-    for (var x in item.checklist) { if (item.checklist[x].checked) {checked_count += 1; }};
-    const [itemstore, setItemStore] = createStore(item);    
+    const [checkedcount, setCheckedCount] = createSignal(0);
+    const [itemstore, setItemStore] = createStore(item);
+    createEffect(() => {
+      let count = 0;
+      for (var x in itemstore.checklist) { if (itemstore.checklist[x].checked) {count += 1; }};
+      setCheckedCount(count);
+    }, [itemstore.checklist])
     const createIdsArray = (items: checklist[]): number[] => {
       return items.map((item, index) => index);
     };
-    console.log(itemstore.checklist);
     let startidarray: number[] = [];
     if (itemstore.checklist != null && itemstore.checklist != undefined) {
       startidarray = createIdsArray(itemstore.checklist);
     }
     const [items, setItems] = createSignal(startidarray);
-    console.log(items());
     const [activeItem, setActiveItem] = createSignal(null);
     const ids = () => items();
     const ChecklistonDragStart = ({ draggable }: any) => setActiveItem(draggable.id);
@@ -147,18 +149,34 @@ export const BoardExample = () => {
     const [state] = useDragDropContext();
     return (
       <div class="grid grid-cols-12 sortable" use:sortable classList={{"opacity-80": sortable.isActiveDraggable, "transition-transform": !!state.active.draggable}}>
-        <div class="col-span-2 m-auto">
+        <div class="col-span-1 m-auto">
           {itemstore.checklist[props.item].checked ?
-            <svg fill="#000000" version="1.1" width={"18%"} class="m-auto" id="Capa_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 490 490"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <polygon points="452.253,28.326 197.831,394.674 29.044,256.875 0,292.469 207.253,461.674 490,54.528 "></polygon> </g></svg>
+            <button onclick={() => {setItemStore("checklist", props.item, {checked: !itemstore.checklist[props.item].checked, content: itemstore.checklist[props.item].content}); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities()}}>
+              <svg fill="#000000" version="1.1" width={"30%"} class="m-auto" id="Capa_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 490 490"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <polygon points="452.253,28.326 197.831,394.674 29.044,256.875 0,292.469 207.253,461.674 490,54.528 "></polygon> </g></svg>
+            </button>
             :
-            <svg fill="#000000" width={"18%"} class="m-auto" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M0 14.545L1.455 16 8 9.455 14.545 16 16 14.545 9.455 8 16 1.455 14.545 0 8 6.545 1.455 0 0 1.455 6.545 8z" fill-rule="evenodd"></path> </g></svg>
+            <button onclick={() => {setItemStore("checklist", props.item, {checked: !itemstore.checklist[props.item].checked, content: itemstore.checklist[props.item].content}); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities()}}>
+              <svg fill="#000000" width={"30%"} class="m-auto" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M0 14.545L1.455 16 8 9.455 14.545 16 16 14.545 9.455 8 16 1.455 14.545 0 8 6.545 1.455 0 0 1.455 6.545 8z" fill-rule="evenodd"></path> </g></svg>
+            </button>
           }
         </div>
         <input
-        class="input my-1 w-full text-sm col-span-10 m-auto"
-        value={itemstore.checklist[props.item].content}
-        onchange={(e)=> {setItemStore("checklist", props.item, {checked: itemstore.checklist[props.item].checked, content: e.target.value}); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities() }}
-       />
+          class="input my-1 w-full text-sm col-span-10 m-auto"
+          value={itemstore.checklist[props.item].content}
+          onchange={(e)=> {setItemStore("checklist", props.item, {checked: itemstore.checklist[props.item].checked, content: e.target.value}); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities() }}
+        />
+        <div class="col-span-1 m-auto">
+            <button onclick={() => {
+              let removedarr = [];
+              for (var x in itemstore.checklist) {
+                if (itemstore.checklist[x].content != itemstore.checklist[props.item].content) {
+                  removedarr.push(itemstore.checklist[x]);
+                }
+              }
+              setItems(createIdsArray(removedarr)); setItemStore("checklist", removedarr); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities();}}>
+              <svg viewBox="0 0 24 24" width={"30%"} class="m-auto" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.73708 6.54391V18.9857C5.73708 19.7449 6.35257 20.3604 7.11182 20.3604H16.8893C17.6485 20.3604 18.264 19.7449 18.264 18.9857V6.54391M2.90906 6.54391H21.0909" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> <path d="M8 6V4.41421C8 3.63317 8.63317 3 9.41421 3H14.5858C15.3668 3 16 3.63317 16 4.41421V6" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> </g></svg>
+            </button>
+        </div>
       </div>
     );
   };
@@ -174,7 +192,7 @@ export const BoardExample = () => {
           >
             <p class="text-lg text-black font-normal w-full mb-6">{itemstore.name}</p>
             {itemstore.checklist &&
-              <p class="text-md text-black font-normal text-left mb-2">{checked_count}/{itemstore.checklist.length}</p>
+              <p class="text-md text-black font-normal text-left mb-2">{checkedcount()}/{itemstore.checklist.length}</p>
             }
             <ul>
               <For each={itemstore.checklist}>{(checklist) =>
