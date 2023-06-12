@@ -300,7 +300,7 @@ export default function SettingsPage() {
               <div class="divider my-6"></div>
               <div class={`mt-8`}>
                 <h2 class="p-2 text-lg font-medium">Customise Navbar:</h2>
-                <div class="grid grid-cols-2 md:grid-cols-7">
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7">
                   <For each={Object.entries(isauth.custom)}>{([key, value]) =>
                     <label class="relative inline-flex items-center cursor-pointer mx-2 my-6">
                       <input type="checkbox" class="sr-only peer" checked={value} onchange={() => updateToggle(key)} />
