@@ -1,5 +1,5 @@
 // @refresh reload
-import { Suspense, createEffect, createSignal, onCleanup, onMount } from "solid-js";
+import { Suspense, createEffect, createSignal } from "solid-js";
 import { useLocation, Body, ErrorBoundary, FileRoutes, Head, Html, Meta, Routes, Scripts, Title, useNavigate } from "solid-start";
 import "./root.css";
 import ToggleTeam from "./components/Toggle/ToggleTeam";
@@ -13,12 +13,15 @@ import { planner } from "./db/schema";
 import server$ from "solid-start/server";
 import { and, eq } from "drizzle-orm";
 
+import 'flowbite';
+
 export default function Root() {
   const [path, setPath] = createSignal(useLocation().pathname);
   const navigate = useNavigate();
 
   const getPlannerCount = async () => {
     const dbFetch = server$(async (token:string|undefined) => {
+      // @ts-ignore
       const auth_checked = await getAuth(token);
       if (auth_checked.loggedin == true) {
         const userplanner = await db.select().from(planner).where(and(eq(planner.username, auth_checked.user.username), eq(planner.type, "item")));
@@ -58,7 +61,7 @@ export default function Root() {
         <Suspense>
           <ErrorBoundary>
             {/* type="text/babel" */}
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js" />
+            {/* <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js" /> */}
             <main>
               <div class="lg:hidden top-0 w-full fixed bg-sky-900">
                 <button data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="fixed items-center p-2 mt-2 ml-3 text-sm text-white rounded-lg lg:hidden focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">

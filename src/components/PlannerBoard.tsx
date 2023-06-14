@@ -466,15 +466,17 @@ export const PlannerBoard = (props: { type: string; }) => {
     }
   }
 
-  const [boardcol, SetBoardCol] = createSignal("grid grid-cols-2 sm:grid-cols-3 mt-5 gap-2 self-stretch lg:grid-cols-3 xl:grid-cols-3");
+  const [boardcol, SetBoardCol] = createSignal("");
 
   const setup = () => {
     batch(async () => {
       getEntities();
-      SetBoardCol("grid grid-cols-2 sm:grid-cols-3 mt-5 gap-2 self-stretch lg:grid-cols-3 xl:grid-cols-" + await getBoardCol());
-      if (props.type == "list") {
-        SetBoardCol("grid grid-cols-1 mt-5 gap-2 self-stretch");
-      }
+      createEffect(async ()=> {
+        SetBoardCol("grid mt-5 gap-2 p-2 self-stretch grid-cols-2 md:grid-cols-3 lg:grid-cols-" + await getBoardCol());
+        if (props.type == "list") {
+          SetBoardCol("grid grid-cols-1 mt-5 gap-2 self-stretch p-2");
+        }
+      }, [await getBoardCol()]);
     });
   };
 
@@ -623,6 +625,7 @@ export const PlannerBoard = (props: { type: string; }) => {
   
   return (
     <>
+      {boardcol() != "" ? 
       <div class={boardcol()}>
         <DragDropProvider
           onDragOver={onDragOver}
@@ -655,6 +658,10 @@ export const PlannerBoard = (props: { type: string; }) => {
           </DragOverlay>
         </DragDropProvider>
       </div>
+      :
+        <div class="">
+        </div>
+      }
     </>
   );
 };
