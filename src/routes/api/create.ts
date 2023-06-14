@@ -41,7 +41,8 @@ export async function GET() {
         'teams BOOLEAN NOT NULL DEFAULT (true), '+
         'projects BOOLEAN NOT NULL DEFAULT (true), '+
         'profile BOOLEAN NOT NULL DEFAULT (true), '+
-        'settings BOOLEAN NOT NULL DEFAULT (true) '+
+        'settings BOOLEAN NOT NULL DEFAULT (true), '+
+        'boardcol INT NOT NULL DEFAULT (4) '+
     ')';
     console.log(customise);
     await conn.execute(customise);

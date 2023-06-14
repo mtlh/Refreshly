@@ -25,13 +25,16 @@ export const auth = mysqlTable('auth', {
 export const customise = mysqlTable('customise', {
   id: serial('id').primaryKey().notNull(),
   username: varchar('username', { length: 256 }).notNull(),
+  // nav toggle
   dashboard: boolean('dashboard').notNull().default(true),
   planner: boolean('planner').notNull().default(true),
   inbox: boolean('inbox').notNull().default(true),
   teams: boolean('teams').notNull().default(true),
   projects: boolean('projects').notNull().default(true),
   profile: boolean('profile').notNull().default(true),
-  settings: boolean('settings').notNull().default(true)
+  settings: boolean('settings').notNull().default(true),
+  //planner
+  boardcol: int('boardcol').notNull().default(4)
 });
 
 export const planner = mysqlTable('planner', {

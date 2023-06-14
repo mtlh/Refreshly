@@ -24,27 +24,28 @@ import { and, eq } from "drizzle-orm";
 import { planner } from "~/db/schema";
 import { useNavigate } from "solid-start";
 import moment from "moment";
+import { getBoardCol } from "./PlannerOptions";
 
 export const ORDER_DELTA = 1;
 export const ID_DELTA = 1;
 
-interface checklist {
+export interface checklist {
   checked: boolean,
   content: string
 }
 
-interface Base {
+export interface Base {
   id: number;
   name: string;
   type: "group" | "item";
   order: string;
 }
 
-interface Group extends Base {
+export interface Group extends Base {
   type: "group";
 }
 
-interface Item extends Base {
+export interface Item extends Base {
   type: "item";
   group: number;
   startdate?: string;
@@ -56,7 +57,7 @@ interface Item extends Base {
   lastupdate: Date;
 }
 
-type Entity = Group | Item;
+export type Entity = Group | Item;
 
 const sortByOrder = (entities: Entity[]) => {
   const sorted = entities.map((item) => ({ order: new Big(item.order), item }));
@@ -83,7 +84,7 @@ const GroupOverlay: VoidComponent<{ name: string; items: Item[] }> = (
   );
 };
 
-export const PlannerBoard = () => {
+export const PlannerBoard = (props: { type: string; }) => {
   const nav = useNavigate();
   const [entities, setEntities] = createStore<Record<Id, Entity>>({});
 
@@ -152,11 +153,11 @@ export const PlannerBoard = () => {
         <div class="col-span-1 m-auto">
           {itemstore.checklist[props.item].checked ?
             <button onclick={() => {setItemStore("checklist", props.item, {checked: !itemstore.checklist[props.item].checked, content: itemstore.checklist[props.item].content}); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities()}}>
-              <svg fill="#000000" version="1.1" width={"30%"} class="m-auto" id="Capa_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 490 490"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <polygon points="452.253,28.326 197.831,394.674 29.044,256.875 0,292.469 207.253,461.674 490,54.528 "></polygon> </g></svg>
+              <svg fill="#000000" version="1.1" class="m-auto w-5" id="Capa_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 490 490"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <polygon points="452.253,28.326 197.831,394.674 29.044,256.875 0,292.469 207.253,461.674 490,54.528 "></polygon> </g></svg>
             </button>
             :
             <button onclick={() => {setItemStore("checklist", props.item, {checked: !itemstore.checklist[props.item].checked, content: itemstore.checklist[props.item].content}); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities()}}>
-              <svg fill="#000000" width={"30%"} class="m-auto" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M0 14.545L1.455 16 8 9.455 14.545 16 16 14.545 9.455 8 16 1.455 14.545 0 8 6.545 1.455 0 0 1.455 6.545 8z" fill-rule="evenodd"></path> </g></svg>
+              <svg fill="#000000" class="m-auto w-5" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M0 14.545L1.455 16 8 9.455 14.545 16 16 14.545 9.455 8 16 1.455 14.545 0 8 6.545 1.455 0 0 1.455 6.545 8z" fill-rule="evenodd"></path> </g></svg>
             </button>
           }
         </div>
@@ -165,16 +166,16 @@ export const PlannerBoard = () => {
           value={itemstore.checklist[props.item].content}
           onchange={(e)=> {setItemStore("checklist", props.item, {checked: itemstore.checklist[props.item].checked, content: e.target.value}); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities() }}
         />
-        <div class="col-span-1 m-auto">
+        <div class="col-span-1 m-auto rounded-lg">
             <button onclick={() => {
               let removedarr = [];
               for (var x in itemstore.checklist) {
-                if (itemstore.checklist[x].content != itemstore.checklist[props.item].content) {
+                if ((itemstore.checklist[x].content != itemstore.checklist[props.item].content) || (itemstore.checklist[x].checked != itemstore.checklist[props.item].checked)) {
                   removedarr.push(itemstore.checklist[x]);
                 }
               }
               setItems(createIdsArray(removedarr)); setItemStore("checklist", removedarr); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities();}}>
-              <svg viewBox="0 0 24 24" width={"30%"} class="m-auto" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.73708 6.54391V18.9857C5.73708 19.7449 6.35257 20.3604 7.11182 20.3604H16.8893C17.6485 20.3604 18.264 19.7449 18.264 18.9857V6.54391M2.90906 6.54391H21.0909" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> <path d="M8 6V4.41421C8 3.63317 8.63317 3 9.41421 3H14.5858C15.3668 3 16 3.63317 16 4.41421V6" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> </g></svg>
+              <svg viewBox="0 0 24 24" class="m-auto w-5" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.73708 6.54391V18.9857C5.73708 19.7449 6.35257 20.3604 7.11182 20.3604H16.8893C17.6485 20.3604 18.264 19.7449 18.264 18.9857V6.54391M2.90906 6.54391H21.0909" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> <path d="M8 6V4.41421C8 3.63317 8.63317 3 9.41421 3H14.5858C15.3668 3 16 3.63317 16 4.41421V6" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> </g></svg>
             </button>
         </div>
       </div>
@@ -279,7 +280,7 @@ export const PlannerBoard = () => {
                   </DragOverlay>
                 </DragDropProvider>
                 <button onClick={() => {try {setItemStore("checklist", l => [...l, {checked: false, content: "new checklist"}])}catch{setItemStore("checklist", [{checked: false, content: "new checklist"}])}; setItems(createIdsArray(itemstore.checklist)); setItems(createIdsArray(itemstore.checklist)); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities()}} 
-                  class="text-lg my-4 font-bold">
+                  class="text-xl my-4 font-bold rounded-lg hover:ring-1 hover:ring-sky-600 w-full">
                   +
                 </button>
               </ul>
@@ -307,7 +308,7 @@ export const PlannerBoard = () => {
       return newarr;
     })
     const newarr = await DeleteFromPlanner(itemid, entities, Cookies.get("auth"));
-    location.reload();
+    location.href = "/planner?" + props.type + "=true"; 
   }
   const saveEntities = async () => {
     const db_insert_entities = server$(async (entities: Entity[], token:string|undefined) => {
@@ -388,7 +389,7 @@ export const PlannerBoard = () => {
   const addItem = (id: number, order: string, name: string, group: number, startdate?: string, duedate?: string, progress: any,
     description: string, checklist: checklist[], priority: "High" | "Medium" | "Low" | "Urgent" | "", lastupdate:  string) => {
     if (!lastupdate) {
-      lastupdate = moment(new Date()).format("HH:mm DD-MM-YYYY").toString()
+      lastupdate = moment(new Date()).format("YYYY-MM-DD").toString()
     }
     setEntities(id, {
       id,
@@ -446,9 +447,9 @@ export const PlannerBoard = () => {
     })
     const planneritems = await getAllEntities(Cookies.get("auth"));
     if (planneritems?.length == 0) {
-      addGroup(getNextID(), "Group 1", getNextOrder());
-      addGroup(getNextID(), "Group 2", getNextOrder());
-      addGroup(getNextID(), "Group 3", getNextOrder());
+      addGroup(getNextID(), "Upcoming", getNextOrder());
+      addGroup(getNextID(), "Ongoing", getNextOrder());
+      addGroup(getNextID(), "Completed", getNextOrder());
     } else {
       for (var entity in planneritems) {
         if (planneritems[entity].type == "item") {
@@ -465,9 +466,15 @@ export const PlannerBoard = () => {
     }
   }
 
+  const [boardcol, SetBoardCol] = createSignal("grid grid-cols-2 sm:grid-cols-3 mt-5 gap-2 self-stretch lg:grid-cols-3 xl:grid-cols-3");
+
   const setup = () => {
-    batch(() => {
+    batch(async () => {
       getEntities();
+      SetBoardCol("grid grid-cols-2 sm:grid-cols-3 mt-5 gap-2 self-stretch lg:grid-cols-3 xl:grid-cols-" + await getBoardCol());
+      if (props.type == "list") {
+        SetBoardCol("grid grid-cols-1 mt-5 gap-2 self-stretch");
+      }
     });
   };
 
@@ -613,10 +620,10 @@ export const PlannerBoard = () => {
 
   const onDragEnd: DragEventHandler = ({ draggable, droppable }) =>
     move(draggable, droppable, false);
-
+  
   return (
     <>
-      <div class={"grid grid-cols-2 sm:grid-cols-2 mt-5 gap-2 self-stretch lg:grid-cols-3 xl:grid-cols-4"}>
+      <div class={boardcol()}>
         <DragDropProvider
           onDragOver={onDragOver}
           onDragEnd={(e)=> {onDragEnd(e); saveEntities()}}

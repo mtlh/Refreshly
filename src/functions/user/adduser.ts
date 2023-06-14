@@ -1,11 +1,7 @@
-import server$ from "solid-start/server"
-import { connect } from '@planetscale/database'
-import { config } from '~/functions/db_config';
+import server$ from "solid-start/server";
 import { db } from "../db_client";
 import { users } from "~/db/schema";
 import { eq } from "drizzle-orm";
-
-const conn = connect(config);
 
 export async function addusertodb(name: string | null | undefined, email: string | null | undefined, imgurl: string | null | undefined) {
     const addUser = server$(async (name, email, imgurl) => {
