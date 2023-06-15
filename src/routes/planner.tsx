@@ -27,7 +27,7 @@ export default function Planner() {
   }
   return (
     <main class="text-center mx-auto text-gray-700">
-      <p class="m-2 p-2 text-4xl font-bold text-left w-full">Planner</p>
+      <p class="m-2 p-2 text-4xl font-bold text-left w-full">Your Planner</p>
       <div class="flex flex-row text-left m-2 p-2 gap-10 underline underline-color text-xl font-normal">
         <button onclick={()=> {SetFormat("board"); nav("/planner?board=true")}}>Board</button>
         {/* <button onclick={()=> {SetFormat("list"); nav("/planner?list=true")}}>List</button> */}

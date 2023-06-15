@@ -177,7 +177,7 @@ export const PlannerOptions = () => {
             <div class="grid grid-cols-1 p-4 text-left">
                 <div class="my-2">
                     <p class="text-xl underline font-bold">Edit current groups:</p>
-                    <p>Please note these can be ordered by drag&drop on board or list views.</p>
+                    <p>Please note these can be ordered by drag&drop within the board section.</p>
                     <div class="grid grid-cols-1">
                       <For each={groupCount()}>{(group) =>
                         <>

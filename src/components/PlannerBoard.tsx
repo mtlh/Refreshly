@@ -466,16 +466,13 @@ export const PlannerBoard = (props: { type: string; }) => {
     }
   }
 
-  const [boardcol, SetBoardCol] = createSignal("");
+  const [boardcol, SetBoardCol] = createSignal(0);
 
   const setup = () => {
     batch(async () => {
       getEntities();
       createEffect(async ()=> {
-        SetBoardCol("grid mt-5 gap-2 p-2 self-stretch grid-cols-2 md:grid-cols-3 lg:grid-cols-" + await getBoardCol());
-        if (props.type == "list") {
-          SetBoardCol("grid grid-cols-1 mt-5 gap-2 self-stretch p-2");
-        }
+        SetBoardCol(await getBoardCol());
       }, [await getBoardCol()]);
     });
   };
@@ -625,42 +622,42 @@ export const PlannerBoard = (props: { type: string; }) => {
   
   return (
     <>
-      {boardcol() != "" ? 
-      <div class={boardcol()}>
-        <DragDropProvider
-          onDragOver={onDragOver}
-          onDragEnd={(e)=> {onDragEnd(e); saveEntities()}}
-          collisionDetector={closestEntity}
-        >
-          <DragDropSensors />
-            <SortableProvider ids={groupIds()}>
-              <For each={groups()}>
-                {(group) => (
-                  <>
-                    <Group
-                      id={group.id}
-                      name={group.name}
-                      items={groupItems(group.id)}
-                    />
-                  </>
-                )}
-              </For>
-            </SortableProvider>
-          <DragOverlay>
-            {(draggable) => {
-              const entity = entities[draggable.id];
-              return isSortableGroup(draggable) ? (
-                <GroupOverlay name={entity.name} items={groupItems(entity.id)} />
-              ) : (
-                <ItemOverlay name={entity.name} />
-              );
-            }}
-          </DragOverlay>
-        </DragDropProvider>
-      </div>
-      :
-        <div class="">
+      {boardcol() != 0 ? 
+        <div class={`grid mt-5 gap-2 p-2 self-stretch grid-cols-${boardcol()}`}>
+          <DragDropProvider
+            onDragOver={onDragOver}
+            onDragEnd={(e)=> {onDragEnd(e); saveEntities()}}
+            collisionDetector={closestEntity}
+          >
+            <DragDropSensors />
+              <SortableProvider ids={groupIds()}>
+                <For each={groups()}>
+                  {(group) => (
+                    <>
+                      <Group
+                        id={group.id}
+                        name={group.name}
+                        items={groupItems(group.id)}
+                      />
+                    </>
+                  )}
+                </For>
+              </SortableProvider>
+            <DragOverlay>
+              {(draggable) => {
+                const entity = entities[draggable.id];
+                return isSortableGroup(draggable) ? (
+                  <GroupOverlay name={entity.name} items={groupItems(entity.id)} />
+                ) : (
+                  <ItemOverlay name={entity.name} />
+                );
+              }}
+            </DragOverlay>
+          </DragDropProvider>
         </div>
+        :
+          <div class="">
+          </div>
       }
     </>
   );
