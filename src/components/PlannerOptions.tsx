@@ -6,11 +6,10 @@ import { getAuth } from "~/functions/getAuth";
 import server$ from "solid-start/server";
 import { For, batch, createEffect, createSignal, onMount } from "solid-js";
 import moment from "moment";
-import { createStore, produce } from "solid-js/store";
+import { createStore } from "solid-js/store";
 import { Id } from "@thisbeyond/solid-dnd";
-import { Entity } from "./PlannerBoard";
+import { Entity, Item } from "./PlannerBoard";
 import { removeGroup } from "~/functions/planner/removeGroup";
-import { useNavigate } from "solid-start";
 
 export const ORDER_DELTA = 1;
 export const ID_DELTA = 1;
@@ -147,6 +146,14 @@ export const PlannerOptions = () => {
                     ordernum: group.order
                   });
                 }
+              }
+            }
+            let tempgroup = [];
+            let tempitem: Item[] = [];
+            for (var x in entities) { if (entities[x].type == "group") {tempgroup.push(entities[x].id); } else { tempitem.push(entities[x])}};
+            for (var y in tempitem) {
+              if ( !tempgroup.includes(tempitem[y].group)) {
+                await db.delete(planner).where(and(eq(planner.id, tempitem[y].id), eq(planner.username, auth_checked.user.username)));
               }
             }
           }

@@ -146,6 +146,14 @@ export const PlannerTimeline = () => {
                 }
               }
             }
+            let tempgroup = [];
+            let tempitem: Item[] = [];
+            for (var x in entities) { if (entities[x].type == "group") {tempgroup.push(entities[x].id); } else { tempitem.push(entities[x])}};
+            for (var y in tempitem) {
+              if ( !tempgroup.includes(tempitem[y].group)) {
+                await db.delete(planner).where(and(eq(planner.id, tempitem[y].id), eq(planner.username, auth_checked.user.username)));
+              }
+            }
           }
         })
         await db_insert_entities(entities, Cookies.get("auth"));
