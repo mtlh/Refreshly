@@ -42,10 +42,28 @@ export const PlannerOptions = () => {
     }, [entities])
     return (
         <>
-            <div class="grid grid-cols-1 p-4 text-left">
-                <div class="my-2">
-                    <p class="text-xl underline font-bold">Edit current groups:</p>
-                    <p>Please note these can be ordered by drag&drop within the board section.</p>
+            <div class="grid grid-cols-1 p-2 text-left">
+                <div class="mb-6">
+                  <p class="text-xl underline font-bold mb-2">Board column amount:</p>
+                  <div class="flex items-center">
+                    <button
+                      class="bg-sky-800 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-l"
+                      onClick={decrement}
+                    >
+                      -
+                    </button>
+                    <p class="text-2xl bg-gray-200 px-6 py-1 rounded-md">{boardcol()}</p>
+                    <button
+                      class="bg-sky-800 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-r"
+                      onClick={increment}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <p class="text-xl underline font-bold">Edit current groups:</p>
+                <p>Please note these can be ordered by drag&drop within the board section.</p>
+                <div class="my-2 p-2 bg-gray-200 shadow-lg border-gray-400 rounded-md">
                     <div class="grid grid-cols-1">
                       <For each={groupCount()}>{(group) =>
                         <>
@@ -68,34 +86,16 @@ export const PlannerOptions = () => {
                         </>
                       }</For>
                     </div>
-                </div>
-                <button
-                  class="text-2xl my-4 font-bold w-full rounded-lg hover:ring-sky-600 hover:ring-1"
-                  onClick={()=> {
-                    let newid = nextID += 1;
-                    let ordernum = nextOrder += 1;
-                    addGroup(newid, "New Group", ordernum.toString(), setEntities);
-                    saveEntities(entities);
-                }}>
-                  +
-                </button>
-                <div class="my-2">
-                  <p class="text-xl underline font-bold">Board column amount:</p>
-                  <div class="flex items-center p-2">
                     <button
-                      class="bg-sky-800 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-l"
-                      onClick={decrement}
-                    >
-                      -
-                    </button>
-                    <p class="text-2xl mx-4">{boardcol()}</p>
-                    <button
-                      class="bg-sky-800 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-r"
-                      onClick={increment}
-                    >
+                      class="text-2xl my-4 font-bold w-full rounded-lg hover:ring-sky-600 hover:ring-1"
+                      onClick={()=> {
+                        let newid = nextID += 1;
+                        let ordernum = nextOrder += 1;
+                        addGroup(newid, "New Group", ordernum.toString(), setEntities);
+                        saveEntities(entities);
+                    }}>
                       +
                     </button>
-                  </div>
                 </div>
             </div>
         </>

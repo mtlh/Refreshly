@@ -47,7 +47,7 @@ export const PlannerTimeline = () => {
 
     return (
         <>
-            <ol class="relative border-l border-sky-200 dark:border-sky-800 text-left m-4">
+            <ol class="relative border-l border-sky-200 dark:border-sky-800 text-left mb-4 p-2">
                 <For each={taskCount()}>{(task: Item) =>
                 <>
                     <li class="mb-10 ml-4">

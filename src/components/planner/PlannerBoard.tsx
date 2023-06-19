@@ -507,7 +507,7 @@ export const PlannerBoard = (props: { type: string; }) => {
   return (
     <>
       {boardcol() != 0 ? 
-        <div class={`grid mt-5 gap-2 p-2 self-stretch grid-cols-${boardcol()}`}>
+        <div class={`grid gap-2 p-2 self-stretch grid-cols-${boardcol()}`}>
           <DragDropProvider
             onDragOver={onDragOver}
             onDragEnd={(e)=> {onDragEnd(e); saveEntities(entities)}}
