@@ -7,8 +7,11 @@ import { encrypt } from "~/functions/encrypt";
 import { generatetoken } from "~/functions/generatetoken";
 import Cookies from "js-cookie";
 import { SignJWT } from 'jose';
+import { useNavigate } from "@solidjs/router";
 
 const Signup = () => {
+    const nav = useNavigate();
+
     const [username, setUsername] = createSignal("");
     const [email, setEmail] = createSignal("");
     const [pass, setPass] = createSignal("");
@@ -109,7 +112,7 @@ const Signup = () => {
                                     class="w-full text-white bg-sky-700 hover:bg-sky-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
                                     >Create an account</button>
                                 <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-                                    Already have an account? <a href="/login" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Click here</a>
+                                    Already have an account? <a onclick={()=> nav("/login")} class="cursor-pointer font-medium text-primary-600 hover:underline dark:text-primary-500">Click here</a>
                                 </p>
                                 <p class="text-red-600 text-lg p-2">{errorOutput()}</p>
                             </div>

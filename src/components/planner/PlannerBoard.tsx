@@ -150,6 +150,13 @@ export const PlannerBoard = (props: { type: string; }) => {
           classList={{ "opacity-25": sortable.isActiveDraggable }}
           >
             <p class="text-lg text-black w-full p-2 font-bold">{itemstore.name}</p>
+            {itemstore.priority == "Urgent" && <p class="bg-red-600 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.priority}</p>}
+            {itemstore.priority == "High" && <p class="bg-orange-500 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.priority}</p>}
+            {itemstore.priority == "Medium" && <p class="bg-yellow-300 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.priority}</p>}
+            {itemstore.priority == "Low" && <p class="bg-green-500 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.priority}</p>}
+            {itemstore.progress == "Completed" && <p class="bg-black text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.progress}</p>}
+            {itemstore.progress == "Ongoing" && <p class="bg-gray-700 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.progress}</p>}
+            {itemstore.progress == "Not Started" && <p class="bg-gray-400 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.progress}</p>}
             <p class="text-sm text-black w-full mb-10 p-2">{itemstore.description}</p>
             <div class="relative">
               {itemstore.checklist &&
