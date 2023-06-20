@@ -77,12 +77,13 @@ export const saveEntities = async (entities: Record<Id, Entity>) => {
           if (entity.type == "group") {
             tempgroup.push(entity.id); 
           } 
-          else if (entity.type == "item") {
-             tempitem.push(entity)
+          else {
+            tempitem.push(entity)
           }
         };
         for (var y in tempitem) {
-          if ( !tempgroup.includes(tempitem[y].group)) {
+          // @ts-ignore
+          if (!tempgroup.includes(tempitem[y].group) && !tempgroup.includes(tempitem[y].groupid)) {
             await db.delete(planner).where(and(eq(planner.id, tempitem[y].id), eq(planner.username, auth_checked.user.username)));
           }
         }

@@ -237,7 +237,7 @@ export default function Root() {
               </aside>
 
               <div class="p-4 lg:ml-64">
-                <div class="p-4 mt-10 lg:mt-0">
+                <div class="p-4 mt-10 lg:mt-0 max-w-screen-2xl m-auto">
                   <Routes>
                     <FileRoutes />
                   </Routes>

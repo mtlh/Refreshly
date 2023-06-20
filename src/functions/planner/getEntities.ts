@@ -28,12 +28,20 @@ export const getEntities = async (nextID: number, nextOrder: number, entities: R
         saveEntities(entities);
     } else {
         for (let entity of planneritems) {
-            // @ts-ignore
-            let ent: Entity = entity;
             if (entity.type == "item") {
-                // @ts-ignore
-                let item: Item = ent;
-                addItem(item, setEntities)
+                addItem({
+                  id: entity.id, 
+                  order: entity.ordernum!, 
+                  name: entity.name!, 
+                  group: entity.groupid!, 
+                  type: "item",
+                  startdate: entity.startdate!,
+                  duedate: entity.duedate!, 
+                  progress: entity.progress!, 
+                  description: entity.description!, 
+                  checklist: JSON.parse(entity.checklist!),
+                  priority: entity.priority!, 
+                  lastupdate: entity.lastupdate}, setEntities)
             } else {
                 addGroup(entity.id, entity.name!, entity.ordernum!, setEntities)
             }
