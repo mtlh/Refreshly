@@ -1,5 +1,5 @@
 import { batch, createEffect, createSignal, onMount } from 'solid-js'
-import { Chart, Title, Tooltip, Legend, Colors, ArcElement } from 'chart.js'
+import { Chart, Title, Tooltip, Legend, Colors, ArcElement, LinearScale } from 'chart.js'
 import { Bar, Pie } from 'solid-chartjs'
 import { getEntities } from '~/functions/planner/getEntities'
 import { createStore } from 'solid-js/store'
@@ -22,7 +22,7 @@ export const PlannerStats = () => {
     const [pieOptions] = createSignal({responsive: true, maintainAspectRatio: false});
 
     onMount(() => {
-        Chart.register(Title, Tooltip, Legend, Colors, ArcElement)
+        Chart.register(Title, Tooltip, Legend, Colors, ArcElement, LinearScale)
         batch(async () => {
             let ent = await getEntities(nextID, nextOrder, entities, setEntities); nextID = ent.nextID; nextOrder = ent.nextOrder;
             let tempnames: string[] = []; let tempgroupid = [];
