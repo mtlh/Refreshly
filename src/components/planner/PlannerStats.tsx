@@ -1,5 +1,5 @@
 import { batch, createEffect, createSignal, onMount } from 'solid-js'
-import { Chart, Title, Tooltip, Legend, Colors, ArcElement, LinearScale } from 'chart.js'
+import { Chart, Title, Tooltip, Legend, Colors, ArcElement, LinearScale, RadialLinearScale } from 'chart.js'
 import { Bar, Pie, PolarArea } from 'solid-chartjs'
 import { getEntities } from '~/functions/planner/getEntities'
 import { createStore } from 'solid-js/store'
@@ -29,7 +29,7 @@ export const PlannerStats = () => {
     const [polarOptions] = createSignal({responsive: true, maintainAspectRatio: false});
 
     onMount(() => {
-        Chart.register(Title, Tooltip, Legend, Colors, ArcElement, LinearScale)
+        Chart.register(Title, Tooltip, Legend, Colors, ArcElement, LinearScale, RadialLinearScale)
         batch(async () => {
             let ent = await getEntities(nextID, nextOrder, entities, setEntities); nextID = ent.nextID; nextOrder = ent.nextOrder;
             let tempnames: string[] = []; let tempgroupid = [];
@@ -74,17 +74,17 @@ export const PlannerStats = () => {
          {chartData().labels.toString() != "" ?
             <>
                 <div class='grid grid-cols-2 md:grid-cols-3 gap-2'>
-                    <div class='p-2 bg-gray-200 shadow-lg border-gray-400 rounded-md w-full h-96 relative pt-12'>
+                    <div class='p-2 bg-gray-100 shadow-lg border-gray-400 rounded-md w-full h-96 relative pt-12'>
                         <div class="absolute left-0 top-0 h-10 w-30 text-lg font-medium m-2">Groups</div>
                         {/* Amount of tasks per group */}
                         <Pie data={chartData()} options={pieOptions()} />
                     </div>
-                    <div class='p-2 bg-gray-200 shadow-lg border-gray-400 rounded-md m-auto w-full h-96 relative pt-12'>
+                    <div class='p-2 bg-gray-100 shadow-lg border-gray-400 rounded-md m-auto w-full h-96 relative pt-12'>
                         <div class="absolute left-0 top-0 h-10 w-30 text-lg font-medium m-2">Progress</div>
                         {/* Priority split across tasks */}
                         <PolarArea data={polarData()} options={polarOptions()} />
                     </div>
-                    <div class='p-2 bg-gray-200 shadow-lg border-gray-400 rounded-md m-auto w-full h-96 relative pt-12'>
+                    <div class='p-2 bg-gray-100 shadow-lg border-gray-400 rounded-md m-auto w-full h-96 relative pt-12'>
                         <div class="absolute left-0 top-0 h-10 w-30 text-lg font-medium m-2">Priority</div>
                         {/* Priority split across tasks */}
                         <Bar data={barData()} options={barOptions()} />

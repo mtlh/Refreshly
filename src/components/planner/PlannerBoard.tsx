@@ -27,6 +27,7 @@ import { getBoardCol } from "./PlannerOptions";
 import { Entity, Item, ORDER_DELTA, checklist } from "~/types_const/planner";
 import { addGroup, addItem } from "~/functions/planner/addItemGroup";
 import { saveEntities } from "~/functions/planner/saveEntities";
+import { getEntities } from "~/functions/planner/getEntities";
 
 const sortByOrder = (entities: Entity[]) => {
   const sorted = entities.map((item) => ({ order: new Big(item.order), item }));
@@ -139,6 +140,14 @@ export const PlannerBoard = (props: { type: string; }) => {
       </div>
     );
   };
+  const [isdueclass, setIsDueClass] = createSignal(" bg-transparent ");
+  createEffect(() => {
+    if (moment(itemstore.duedate).isBefore(moment(new Date())) == true) {
+      setIsDueClass(" text-white bg-red-500 ")
+    } else { 
+      setIsDueClass(" bg-transparent ")
+    }
+  }, [itemstore.duedate]);
     return (
       <>
         <label
@@ -146,10 +155,10 @@ export const PlannerBoard = (props: { type: string; }) => {
         >
           <div
           use:sortable
-          class="sortable bg-gray-100 rounded-lg p-2 m-2 text-left ring-1 ring-gray-300 shadow-sm container hover:shadow-xl"
+          class="sortable bg-gray-100 rounded-lg p-1 m-2 text-left ring-1 ring-gray-300 shadow-sm container hover:shadow-2xl"
           classList={{ "opacity-25": sortable.isActiveDraggable }}
           >
-            <p class="text-lg text-black w-full p-2 font-bold">{itemstore.name}</p>
+            <p class="text-lg text-black w-full py-0.5 px-2.5 font-bold">{itemstore.name}</p>
             {itemstore.priority == "Urgent" && <p class="bg-red-600 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.priority}</p>}
             {itemstore.priority == "High" && <p class="bg-orange-500 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.priority}</p>}
             {itemstore.priority == "Medium" && <p class="bg-yellow-300 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.priority}</p>}
@@ -157,22 +166,12 @@ export const PlannerBoard = (props: { type: string; }) => {
             {itemstore.progress == "Completed" && <p class="bg-black text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.progress}</p>}
             {itemstore.progress == "Ongoing" && <p class="bg-gray-700 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.progress}</p>}
             {itemstore.progress == "Not Started" && <p class="bg-gray-400 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.progress}</p>}
-            <p class="text-sm text-black w-full mb-10 p-2">{itemstore.description}</p>
+            <p class="text-sm text-black w-full py-0.5 px-2.5 mb-8 mt-1">{itemstore.description}</p>
             <div class="relative">
               {itemstore.checklist &&
-                <p class="absolute bottom-0 right-0 text-right p-2 italic">{checkedcount()}/{itemstore.checklist.length}</p>
+                <p class="absolute bottom-0 right-0 text-right py-0.5 px-2.5 italic text-sm">{checkedcount()}/{itemstore.checklist.length}</p>
               }
-              { itemstore.duedate ?
-                <>
-                  { moment(itemstore.duedate).isBefore(moment(new Date())) == true ?
-                    <p class="absolute p-2 italic bottom-0 left-0 ring-red-600 ring-2 rounded-lg">{moment(itemstore.duedate).format("DD-MM-YYYY")}</p>
-                    :
-                    <p class="absolute p-2 italic bottom-0 left-0">{moment(itemstore.duedate).format("DD-MM-YYYY")}</p>
-                  }
-                </>
-                :
-                <p class="absolute p-2 italic bottom-0 left-0">Unscheduled</p>
-              }
+              <input type="date" class={"py-0.5 px-2.5 absolute italic bottom-0 left-0 text-sm border-0 rounded-lg w-[7.5rem] focus:ring-sky-800 focus:ring-2" + isdueclass()} value={itemstore.duedate} onChange={(e) => {setItemStore("duedate", e.target.value); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities(entities)}} />
             </div>
           </div>
         </label>
@@ -315,53 +314,53 @@ export const PlannerBoard = (props: { type: string; }) => {
     );
   };
 
-  const getEntities = async () => {
-    const getAllEntities = server$(async (token:string|undefined) => {
-      const auth_checked = await getAuth(token);
-      if (auth_checked.loggedin == true) {
-        const userplanner = await db.select().from(planner).where(eq(planner.username, auth_checked.user.username));
-        return userplanner;
-      } else {
-        return [];
-      }
-    })
-    const planneritems = await getAllEntities(Cookies.get("auth"));
-    if (planneritems?.length == 0) {
-      addGroup(nextID+=1, "Upcoming", (nextOrder+=1).toString(), setEntities);
-      addGroup(nextID+=1, "Ongoing", (nextOrder+=1).toString(), setEntities);
-      addGroup(nextID+=1, "Completed", (nextOrder+=1).toString(), setEntities);
-    } else {
-      for (var entity of planneritems) {
-        if (entity.type == "item") {
-          addItem({
-            id: entity.id, 
-            order: entity.ordernum!, 
-            name: entity.name!, 
-            group: entity.groupid!, 
-            type: "item",
-            startdate: entity.startdate!,
-            duedate: entity.duedate!, 
-            progress: entity.progress!, 
-            description: entity.description!, 
-            checklist: JSON.parse(entity.checklist!),
-            priority: entity.priority!, 
-            lastupdate: entity.lastupdate}, setEntities)
-        } else {
-          addGroup(entity.id, entity.name!, entity.ordernum!, setEntities)
-        }
-        if (entity.id >= nextID) {
-          nextID = (entity.id + 1); 
-        }
-        nextOrder += 1;
-      }
-    }
-  }
+  // const getEntities = async () => {
+  //   const getAllEntities = server$(async (token:string|undefined) => {
+  //     const auth_checked = await getAuth(token);
+  //     if (auth_checked.loggedin == true) {
+  //       const userplanner = await db.select().from(planner).where(eq(planner.username, auth_checked.user.username));
+  //       return userplanner;
+  //     } else {
+  //       return [];
+  //     }
+  //   })
+  //   const planneritems = await getAllEntities(Cookies.get("auth"));
+  //   if (planneritems?.length == 0) {
+  //     addGroup(nextID+=1, "Upcoming", (nextOrder+=1).toString(), setEntities);
+  //     addGroup(nextID+=1, "Ongoing", (nextOrder+=1).toString(), setEntities);
+  //     addGroup(nextID+=1, "Completed", (nextOrder+=1).toString(), setEntities);
+  //   } else {
+  //     for (var entity of planneritems) {
+  //       if (entity.type == "item") {
+  //         addItem({
+  //           id: entity.id, 
+  //           order: entity.ordernum!, 
+  //           name: entity.name!, 
+  //           group: entity.groupid!, 
+  //           type: "item",
+  //           startdate: entity.startdate!,
+  //           duedate: entity.duedate!, 
+  //           progress: entity.progress!, 
+  //           description: entity.description!, 
+  //           checklist: JSON.parse(entity.checklist!),
+  //           priority: entity.priority!, 
+  //           lastupdate: entity.lastupdate}, setEntities)
+  //       } else {
+  //         addGroup(entity.id, entity.name!, entity.ordernum!, setEntities)
+  //       }
+  //       if (entity.id >= nextID) {
+  //         nextID = (entity.id + 1); 
+  //       }
+  //       nextOrder += 1;
+  //     }
+  //   }
+  // }
 
   const [boardcol, SetBoardCol] = createSignal(0);
 
   const setup = () => {
     batch(async () => {
-      getEntities();
+      let ent = await getEntities(nextID, nextOrder, entities, setEntities); nextID = ent.nextID; nextOrder = ent.nextOrder;
       createEffect(async ()=> {
         SetBoardCol(await getBoardCol());
       }, [await getBoardCol()]);
@@ -514,7 +513,7 @@ export const PlannerBoard = (props: { type: string; }) => {
   return (
     <>
       {boardcol() != 0 ? 
-        <div class={`grid gap-2 p-2 self-stretch grid-cols-${boardcol()}`}>
+        <div class={`grid gap-2 p-2 self-stretch grid-cols-2 md:grid-cols-3 lg:grid-cols-${boardcol()}`}>
           <DragDropProvider
             onDragOver={onDragOver}
             onDragEnd={(e)=> {onDragEnd(e); saveEntities(entities)}}

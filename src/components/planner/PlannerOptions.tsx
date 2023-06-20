@@ -43,7 +43,7 @@ export const PlannerOptions = () => {
     return (
         <>
             <div class="grid grid-cols-2 p-2 text-left gap-6">
-                <div class="my-2 p-2 bg-gray-200 shadow-lg border-gray-400 rounded-md">
+                <div class="my-2 p-2 bg-gray-100 shadow-lg border-gray-400 rounded-md">
                   <p class="text-xl underline font-bold">Edit current groups:</p>
                   <p>Please note these can be ordered by drag&drop within the board section.</p>
                     <div class="grid grid-cols-1">
@@ -79,7 +79,7 @@ export const PlannerOptions = () => {
                       +
                     </button>
                 </div>
-                <div class="my-2 p-2 bg-gray-200 shadow-lg border-gray-400 rounded-md">
+                <div class="my-2 p-2 bg-gray-100 shadow-lg border-gray-400 rounded-md">
                   <p class="text-xl underline font-bold mb-2">Board column amount:</p>
                   <div class="flex items-center">
                     <button
