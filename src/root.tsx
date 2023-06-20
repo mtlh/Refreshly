@@ -36,6 +36,12 @@ export default function Root() {
   const [plannerCount, setPlannerCount] = createSignal(0);
   const [checkAuth, setCheckAuth] = createSignal(true)
   const [isauth, setAuth] = createStore(base_noauth);
+
+  function updateState () {
+    setTimeout(() => {
+      setPath(window.location.pathname);
+    }, 500);
+  }
   createEffect(async () => {
     if (checkAuth() == true) {
       setAuth(await getAuth(Cookies.get("auth")));
@@ -45,9 +51,8 @@ export default function Root() {
       }
       setPlannerCount(await getPlannerCount());
     }
-    setTimeout(() => {
-      setPath(window.location.pathname);
-    }, 500);
+    updateState();
+    window.addEventListener('popstate', updateState);
   });
   
   return (
