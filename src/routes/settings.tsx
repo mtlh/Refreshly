@@ -13,7 +13,6 @@ import { encrypt, encryptCheck } from "~/functions/encrypt";
 import { base_noauth, type baseauthtype } from "~/functions/db_config";
 
 export default function SettingsPage() {
-  const currenttime = new Date().toUTCString();
   const [isauth, setAuth] = createStore(base_noauth);
 
   const [Currentpassword, setCurrentPassword] = createSignal('');
@@ -27,16 +26,12 @@ export default function SettingsPage() {
 
   const [email, setEmail] = createSignal(isauth.user.email);
   const [username, setUsername] = createSignal(isauth.user.username);
-  const [createdAt, setCreatedAt] = createSignal(currenttime);
 
   const nav = useNavigate();
   //const [auth] = createResource(getAuth);
   createEffect(async () => {
     setAuth(await getAuth(Cookies.get("auth")));
     if (isauth.loggedin == false) {nav("/login")};
-    setUsername(isauth.user.username);
-    setEmail(isauth.user.email);
-    setCreatedAt(isauth.user.created);
   });
 
   const handleSubmitPassword = async () => {
@@ -128,8 +123,8 @@ export default function SettingsPage() {
     return ret;
   }
 
-  const buttonselect_tailwind = "bg-sky-800 text-white";
-  const nonselected_tailwind = "hover:bg-sky-700 hover:text-white";
+  const buttonselect_tailwind = "bg-sky-700 text-white";
+  const nonselected_tailwind = "hover:bg-gray-100 hover:text-black";
   const [showPassword, setShowPassword] = createSignal({
     pass: buttonselect_tailwind,
     username: nonselected_tailwind,
@@ -172,19 +167,9 @@ export default function SettingsPage() {
       <>
         {isauth.loggedin == true &&
          <>
-            <div class={`max-w-md sm:max-w-2xl md:max-w-3xl lg:max-w-6xl xl:max-w-full mx-auto p-4`}>
-              <div class={`items-center space-y-4 flex`}>
-                <img
-                  src={isauth.user.imgurl}// Replace with actual profile picture URL
-                  alt="Profile Picture"
-                  class={`w-32 h-32 rounded-full mr-6`}
-                />
-                <div class="my-auto">
-                  <h2 class={`text-2xl font-bold`}>{username()}</h2>
-                  <h2 class={`text-lg font-medium`}>{createdAt()}</h2>
-                </div>
-              </div>
-              <div class={`mt-8`}>
+            <main class="text-left mx-auto text-gray-700 p-4">
+              <p class="m-2 p-2 text-4xl font-bold text-left w-full">Settings</p>
+              <div class={`mt-8 p-2`}>
                 <h2 class="p-2 text-lg font-medium">Change:</h2>
                 <ul class="menu menu-horizontal bg-base-100 rounded-box border">
                   <li><a class={showPassword().pass} onclick={() => handleShow('pass')}>Password</a></li>
@@ -299,7 +284,7 @@ export default function SettingsPage() {
               </div>
               <div class="divider my-6"></div>
               <div class={`mt-8`}>
-                <h2 class="p-2 text-lg font-medium">Customise Navbar:</h2>
+                <h2 class="p-2 text-lg font-medium">Sidebar selection:</h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7">
                   <For each={Object.entries(isauth.custom)}>{([key, value]) =>
                     <label class="relative inline-flex items-center cursor-pointer mx-2 my-6">
@@ -311,7 +296,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div class="divider my-6"></div> 
-            </div>
+            </main>
          </>
        }
        {isauth.user.username == 'none ' && isauth.loggedin == false && 

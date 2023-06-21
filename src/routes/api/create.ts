@@ -1,5 +1,8 @@
 import { connect } from '@planetscale/database'
+import { customise } from '~/db/schema';
+import { db } from '~/functions/db_client';
 import { config } from '~/functions/db_config';
+import { encrypt } from '~/functions/encrypt';
 
 const conn = connect(config);
 
@@ -31,8 +34,13 @@ export async function GET() {
     console.log(auth);
     await conn.execute(auth);
 
+    const insertstring = "INSERT INTO auth (username, displayname, email, pass, imgurl, validemail, token) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    const insertvalues = ['demouser', 'demouser', 'matthewtlharvey@gmail.com', await encrypt('thisisademoaccount'), 'https://eu.ui-avatars.com/api/?name=demouser', false, 'jiogjnangooajg']
+    await conn.execute(insertstring, insertvalues);
+    console.log(insertstring, insertvalues);
+
     await conn.execute('DROP TABLE IF EXISTS customise');
-    const customise: string = 'CREATE TABLE IF NOT EXISTS customise ( '+
+    const custom: string = 'CREATE TABLE IF NOT EXISTS customise ( '+
         'id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, '+
         'username VARCHAR(255) NOT NULL, '+
         'dashboard BOOLEAN NOT NULL DEFAULT (true), '+
@@ -42,10 +50,14 @@ export async function GET() {
         'projects BOOLEAN NOT NULL DEFAULT (true), '+
         'profile BOOLEAN NOT NULL DEFAULT (true), '+
         'settings BOOLEAN NOT NULL DEFAULT (true), '+
-        'boardcol INT NOT NULL DEFAULT (4) '+
+        'boardcol INT NOT NULL DEFAULT (4), '+
+        'groupfilter VARCHAR(255) DEFAULT ("[]")'+
     ')';
-    console.log(customise);
-    await conn.execute(customise);
+    console.log(custom);
+    await conn.execute(custom);
+
+    const insertcustom = await db.insert(customise).values({username: "demouser"});
+    console.log(insertcustom);
 
     await conn.execute('DROP TABLE IF EXISTS planner');
     const planner: string = 'CREATE TABLE IF NOT EXISTS planner ( '+

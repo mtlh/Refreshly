@@ -34,7 +34,8 @@ export const customise = mysqlTable('customise', {
   profile: boolean('profile').notNull().default(true),
   settings: boolean('settings').notNull().default(true),
   //planner
-  boardcol: int('boardcol').notNull().default(4)
+  boardcol: int('boardcol').notNull().default(4),
+  groupfilter: varchar('groupfilter', {length:256}).notNull().default("[]")
 });
 
 export const planner = mysqlTable('planner', {

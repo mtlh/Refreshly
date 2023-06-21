@@ -73,7 +73,7 @@ export const PlannerStats = () => {
         <>
          {chartData().labels.toString() != "" ?
             <>
-                <div class='grid grid-cols-2 md:grid-cols-3 gap-2'>
+                <div class='grid grid-cols-2 md:grid-cols-3 gap-6'>
                     <div class='p-2 bg-gray-100 shadow-lg border-gray-400 rounded-md w-full h-96 relative pt-12'>
                         <div class="absolute left-0 top-0 h-10 w-30 text-lg font-medium m-2">Groups</div>
                         {/* Amount of tasks per group */}

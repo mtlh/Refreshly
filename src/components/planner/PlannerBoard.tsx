@@ -14,7 +14,7 @@ import {
   useDragDropContext,
 } from "@thisbeyond/solid-dnd";
 import { batch, createEffect, createSignal, For, onMount, VoidComponent} from "solid-js";
-import { createStore } from "solid-js/store";
+import { createStore, produce } from "solid-js/store";
 import Big from "big.js";
 import Cookies from "js-cookie";
 import server$ from "solid-start/server";
@@ -28,6 +28,7 @@ import { Entity, Item, ORDER_DELTA, checklist } from "~/types_const/planner";
 import { addGroup, addItem } from "~/functions/planner/addItemGroup";
 import { saveEntities } from "~/functions/planner/saveEntities";
 import { getEntities } from "~/functions/planner/getEntities";
+import { UpdateGroupShowFilter, getGroupShowFilter } from "~/functions/planner/filterGroupShow";
 
 const sortByOrder = (entities: Entity[]) => {
   const sorted = entities.map((item) => ({ order: new Big(item.order), item }));
@@ -275,7 +276,7 @@ export const PlannerBoard = (props: { type: string; }) => {
     location.href = "/planner?" + props.type + "=true"; 
   }
 
-  const Group: VoidComponent<{ id: Id; name: string; items: Item[] }> = (
+  const Group: VoidComponent<{ id: Id; name: string; items: Item[]}> = (
     props
   ) => {
     const sortable = createSortable(props.id, { type: "group" });
@@ -286,7 +287,7 @@ export const PlannerBoard = (props: { type: string; }) => {
         style={maybeTransformStyle(sortable.transform)}
         classList={{ "opacity-25": sortable.isActiveDraggable }}
       >
-        <div class="column-header text-2xl mb-2 text-left p-2" {...sortable.dragActivators}>
+        <div class={"column-header text-2xl mb-2 text-left p-2"} {...sortable.dragActivators}>
           {props.name}
         </div>
         <div class="column cursor-move">
@@ -356,23 +357,35 @@ export const PlannerBoard = (props: { type: string; }) => {
   //   }
   // }
 
-  const [boardcol, SetBoardCol] = createSignal(0);
-
-  const setup = () => {
-    batch(async () => {
-      let ent = await getEntities(nextID, nextOrder, entities, setEntities); nextID = ent.nextID; nextOrder = ent.nextOrder;
-      createEffect(async ()=> {
-        SetBoardCol(await getBoardCol());
-      }, [await getBoardCol()]);
-    });
-  };
-
-  onMount(setup);
-
   const groups = () =>
     sortByOrder(
       Object.values(entities).filter((item) => item.type === "group")
     ) as Group[];
+
+  const [boardcol, SetBoardCol] = createSignal(0);
+  const [groupfilter, SetGroupFilter] = createSignal(Array.from({length: groups().length}, () => true));
+
+  function updateGroupFilterAtIndex(index: number, newValue: boolean) {
+    SetGroupFilter(produce((draft) => {
+      draft[index] = newValue;
+    }));
+  }
+
+  const setup = () => {
+    batch(async () => {
+      let ent = await getEntities(nextID, nextOrder, entities, setEntities); nextID = ent.nextID; nextOrder = ent.nextOrder;
+
+      createEffect(async ()=> {
+        SetGroupFilter(await getGroupShowFilter());
+      }, []);
+
+      createEffect(async ()=> {
+        SetBoardCol(await getBoardCol());
+      }, []);
+    });
+  };
+
+  onMount(setup);
 
   const groupIds = () => groups().map((group) => group.id);
 
@@ -512,39 +525,69 @@ export const PlannerBoard = (props: { type: string; }) => {
   
   return (
     <>
-      {boardcol() != 0 ? 
-        <div class={`grid gap-2 p-2 self-stretch grid-cols-2 md:grid-cols-3 lg:grid-cols-${boardcol()}`}>
-          <DragDropProvider
-            onDragOver={onDragOver}
-            onDragEnd={(e)=> {onDragEnd(e); saveEntities(entities)}}
-            collisionDetector={closestEntity}
-          >
-            <DragDropSensors />
-              <SortableProvider ids={groupIds()}>
-                <For each={groups()}>
-                  {(group) => (
-                    <>
-                      <Group
-                        id={group.id}
-                        name={group.name}
-                        items={groupItems(group.id)}
-                      />
-                    </>
-                  )}
-                </For>
-              </SortableProvider>
-            <DragOverlay>
-              {(draggable) => {
-                const entity = entities[draggable.id];
-                return isSortableGroup(draggable) ? (
-                  <GroupOverlay name={entity.name} items={groupItems(entity.id)} />
-                ) : (
-                  <ItemOverlay name={entity.name} />
-                );
-              }}
-            </DragOverlay>
-          </DragDropProvider>
-        </div>
+      {(boardcol() != 0 && JSON.stringify(groupfilter()[0]) != "") ? 
+        <>    
+          <div class="relative">
+            <div class="absolute dropdown dropdown-bottom dropdown-end top-0 right-0 -translate-y-14">
+              <label tabindex="0" class="btn flex text-lg bg-white m-1 rounded-sm text-black hover:bg-gray-200 capitalize border-0">
+                Filter
+                <svg class="w-6 h-6 ml-2" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill-rule="evenodd" clip-rule="evenodd" d="M15 10.5A3.502 3.502 0 0 0 18.355 8H21a1 1 0 1 0 0-2h-2.645a3.502 3.502 0 0 0-6.71 0H3a1 1 0 0 0 0 2h8.645A3.502 3.502 0 0 0 15 10.5zM3 16a1 1 0 1 0 0 2h2.145a3.502 3.502 0 0 0 6.71 0H21a1 1 0 1 0 0-2h-9.145a3.502 3.502 0 0 0-6.71 0H3z" fill="#000000"></path></g></svg>
+              </label>
+              <div tabindex="0" class="dropdown-content card card-compact w-40 rounded-sm shadow bg-white text-black">
+                <div class="card-body">
+                  <ul class="p-0 space-y-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownCheckboxButton">
+                    <For each={groups()}>
+                      {(group, v) => (
+                        <>
+                          <li>
+                            <div class="flex items-center">
+                                <input checked={groupfilter()[v()]} onchange={() => { updateGroupFilterAtIndex(v(), !groupfilter()[v()]); UpdateGroupShowFilter(groupfilter()); location.reload() } } id="checkbox-item-2" type="checkbox" value="" class="w-5 h-5 text-sky-800 bg-gray-100 border-gray-300 rounded focus:ring-sky-700" />
+                                <label for="checkbox-item-2" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">{group.name}</label>
+                              </div>
+                          </li>
+                        </>
+                      )}
+                    </For>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class={`grid gap-2 p-2 self-stretch grid-cols-2 md:grid-cols-3 lg:grid-cols-${boardcol()}`}>
+            <DragDropProvider
+              onDragOver={onDragOver}
+              onDragEnd={(e)=> {onDragEnd(e); saveEntities(entities)}}
+              collisionDetector={closestEntity}
+            >
+              <DragDropSensors />
+                <SortableProvider ids={groupIds()}>
+                  <For each={groups()}>
+                    {(group, x) => (
+                      <>
+                        {groupfilter()[x()] == true &&
+                          <Group
+                            id={group.id}
+                          name={group.name}
+                          items={groupItems(group.id)}
+                          />
+                        }
+                      </>
+                    )}
+                  </For>
+                </SortableProvider>
+              <DragOverlay>
+                {(draggable) => {
+                  const entity = entities[draggable.id];
+                  return isSortableGroup(draggable) ? (
+                    <GroupOverlay name={entity.name} items={groupItems(entity.id)} />
+                  ) : (
+                    <ItemOverlay name={entity.name} />
+                  );
+                }}
+              </DragOverlay>
+            </DragDropProvider>
+          </div>
+        </>
         :
           <div class="">
           </div>
