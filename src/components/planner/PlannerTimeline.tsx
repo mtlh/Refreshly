@@ -4,6 +4,7 @@ import { createStore } from "solid-js/store";
 import { Id } from "@thisbeyond/solid-dnd";
 import { Entity, Item } from "~/types_const/planner";
 import { getEntities } from "~/functions/planner/getEntities";
+import { UploadAvatar } from "~/functions/uploads/UploadAvatar";
 
 export const PlannerTimeline = () => {
     let nextOrder = 1;
@@ -13,6 +14,9 @@ export const PlannerTimeline = () => {
     const setup = () => {
     batch(async () => {
       let ent = await getEntities(nextID, nextOrder, entities, setEntities); nextID = ent.nextID; nextOrder = ent.nextOrder;
+
+      //console.log(await UploadAvatar(""))
+
     });
     };
     onMount(setup);
@@ -43,7 +47,10 @@ export const PlannerTimeline = () => {
         let itemarr = tempgroup as Item[]; 
         itemarr.sort(compareDueDate);
         setTaskCount(itemarr);
+
     }, [entities])
+
+    
 
     return (
         <>

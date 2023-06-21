@@ -177,8 +177,8 @@ export const PlannerBoard = (props: { type: string; }) => {
           </div>
         </label>
         <input type="checkbox" id={itemstore.id.toString()} class="modal-toggle" />
-        <label for={itemstore.id.toString()} class="modal cursor-pointer">
-          <label class="modal-box relative rounded-lg w-5/6 h-3/4" for="">
+        <label for={itemstore.id.toString()} class="modal cursor-pointer z-50">
+          <label class="modal-box relative rounded-lg w-full h-full" for="">
             <input class="py-1 w-full text-lg font-bold" value={itemstore.name} onChange={(e) => {setItemStore("name", e.target.value); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities(entities)}}/>
             <p class="py-1 text-left italic font-light">Last updated: {moment(itemstore.lastupdate).format("HH:mm DD-MM-YYYY")}</p>
             <div class="grid grid-cols-2">
@@ -281,6 +281,14 @@ export const PlannerBoard = (props: { type: string; }) => {
   ) => {
     const sortable = createSortable(props.id, { type: "group" });
     const sortedItemIds = () => props.items.map((item) => item.id);
+    const [isOpen, setIsOpen] = createSignal(false);
+    const toggleDropdown = () => {
+      setIsOpen(!isOpen());
+    };
+    const [completed_count, setCompletedCount] = createSignal(0);
+    createEffect(() => {
+      setCompletedCount(props.items.filter(item => item.progress === 'Completed').length);
+    });
     return (
       <div
         ref={sortable.ref}
@@ -294,7 +302,11 @@ export const PlannerBoard = (props: { type: string; }) => {
           <SortableProvider ids={sortedItemIds()}>
             <For each={props.items}>
               {(item) => (
-                <Item {...item} />
+                <>
+                  { item.progress != "Completed" &&
+                    <Item {...item} />
+                  }
+                </>
               )}
             </For>
           </SortableProvider>
@@ -310,7 +322,47 @@ export const PlannerBoard = (props: { type: string; }) => {
           lastupdate: new Date(),
           id: nextID+=1,
           order: (nextOrder+=1).toString()
-        }, setEntities); saveEntities(entities)}} class="bg-grey-100 text-2xl rounded-2xl w-[96%] text-black p-1 hover:ring-2">+</button>
+        }, setEntities); saveEntities(entities)}} class="bg-grey-100 text-2xl rounded-sm w-[95%] text-black p-1 hover:ring-2 m-auto">+</button>
+        <div class="relative mt-2">
+          <button
+            class="flex items-center justify-between px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-sm w-[95%] focus:outline-none focus:bg-gray-300 m-auto"
+            onClick={toggleDropdown}
+          >
+            Completed - 
+            {completed_count()}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              class={`ml-2 w-4 h-4 transition-transform duration-300 ${
+                isOpen() ? "transform rotate-180" : ""
+              }`}
+            >
+              <path
+                fill-rule="evenodd"
+                d="M5.293 6.293a1 1 0 0 1 1.414 0L10 9.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 0-1.414z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+          {isOpen() && (
+            <div class="absolute z-10 w-full mt-2 rounded-lg">
+              <div class="column cursor-move">
+                <SortableProvider ids={sortedItemIds()}>
+                  <For each={props.items}>
+                    {(item) => (
+                      <>
+                        { item.progress == "Completed" &&
+                          <Item {...item} />
+                        }
+                      </>
+                    )}
+                  </For>
+                </SortableProvider>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -528,32 +580,36 @@ export const PlannerBoard = (props: { type: string; }) => {
       {(boardcol() != 0 && JSON.stringify(groupfilter()[0]) != "") ? 
         <>    
           <div class="relative">
-            <div class="absolute dropdown dropdown-bottom dropdown-end top-0 right-0 -translate-y-14">
-              <label tabindex="0" class="btn flex text-lg bg-white m-1 rounded-sm text-black hover:bg-gray-200 capitalize border-0">
+            <div class="absolute dropdown dropdown-bottom dropdown-end top-0 right-0 -translate-y-14 z-30">
+              <label tabindex="0" class="btn flex text-lg bg-gray-100 rounded-lg m-1 text-black hover:bg-gray-200 capitalize border-0">
                 Filter
                 <svg class="w-6 h-6 ml-2" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill-rule="evenodd" clip-rule="evenodd" d="M15 10.5A3.502 3.502 0 0 0 18.355 8H21a1 1 0 1 0 0-2h-2.645a3.502 3.502 0 0 0-6.71 0H3a1 1 0 0 0 0 2h8.645A3.502 3.502 0 0 0 15 10.5zM3 16a1 1 0 1 0 0 2h2.145a3.502 3.502 0 0 0 6.71 0H21a1 1 0 1 0 0-2h-9.145a3.502 3.502 0 0 0-6.71 0H3z" fill="#000000"></path></g></svg>
               </label>
-              <div tabindex="0" class="dropdown-content card card-compact w-40 rounded-sm shadow bg-white text-black">
+              <div tabindex="0" class="dropdown-content card card-compact w-60 rounded-sm shadow bg-white text-black z-30">
                 <div class="card-body">
-                  <ul class="p-0 space-y-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownCheckboxButton">
+                  <ul class="p-0 space-y-2 text-lg text-gray-700 dark:text-gray-200" aria-labelledby="dropdownCheckboxButton">
                     <For each={groups()}>
                       {(group, v) => (
                         <>
                           <li>
                             <div class="flex items-center">
-                                <input checked={groupfilter()[v()]} onchange={() => { updateGroupFilterAtIndex(v(), !groupfilter()[v()]); UpdateGroupShowFilter(groupfilter()); location.reload() } } id="checkbox-item-2" type="checkbox" value="" class="w-5 h-5 text-sky-800 bg-gray-100 border-gray-300 rounded focus:ring-sky-700" />
-                                <label for="checkbox-item-2" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">{group.name}</label>
+                                <input checked={groupfilter()[v()]} onchange={() => { updateGroupFilterAtIndex(v(), !groupfilter()[v()]); UpdateGroupShowFilter(groupfilter()); } } id="checkbox-item-2" type="checkbox" value="" 
+                                  class="w-6 h-6 text-sky-800 bg-gray-100 border-gray-300 rounded focus:ring-sky-700"
+                                 />
+                                <label for="checkbox-item-2" class="ml-1 text-lg font-medium text-gray-900 dark:text-gray-300">{group.name}</label>
                               </div>
                           </li>
                         </>
                       )}
                     </For>
                   </ul>
+                  <button onclick={()=> {location.reload()}} class="bg-sky-800 hover:bg-sky-700 text-white rounded-sm m-1 p-2 text-lg">Save</button>
                 </div>
               </div>
             </div>
           </div>
-          <div class={`grid gap-2 p-2 self-stretch grid-cols-2 md:grid-cols-3 lg:grid-cols-${boardcol()}`}>
+          {/* <div class={`grid gap-2 p-2 self-stretch grid-cols-2 md:grid-cols-3 lg:grid-cols-${boardcol()}`}></div> */}
+          <div class={`grid gap-2 p-2 self-stretch grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6`}>
             <DragDropProvider
               onDragOver={onDragOver}
               onDragEnd={(e)=> {onDragEnd(e); saveEntities(entities)}}
