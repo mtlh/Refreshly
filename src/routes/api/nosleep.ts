@@ -7,6 +7,6 @@ export async function GET() {
     await conn.execute('INSERT IGNORE INTO nosleep VALUES (?,?)', [1, "Complete"]);
     // @ts-ignore
     const sel = (await conn.execute('SELECT test FROM nosleep WHERE id = ?', [1])).rows[0].test;
-    await conn.execute('DROP TABLE test');
+    await conn.execute('DROP TABLE nosleep');
     return new Response("No Sleep " + sel);
 }

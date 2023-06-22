@@ -1,4 +1,4 @@
-import { boolean, date, int, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { binary, boolean, date, int, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 //npx drizzle-kit generate:mysql --out migrations-folder --schema src/db/schema.ts
 
@@ -35,7 +35,8 @@ export const customise = mysqlTable('customise', {
   settings: boolean('settings').notNull().default(true),
   //planner
   boardcol: int('boardcol').notNull().default(4),
-  groupfilter: varchar('groupfilter', {length:256}).notNull().default("[]")
+  groupfilter: varchar('groupfilter', {length:256}).notNull().default("[]"),
+  imgtest: binary('imgtest', {length: 999999})
 });
 
 export const planner = mysqlTable('planner', {

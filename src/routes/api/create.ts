@@ -8,16 +8,16 @@ const conn = connect(config);
 
 export async function GET() {
 
-    // await conn.execute('DROP TABLE IF EXISTS users');
-    // const users: string = 'CREATE TABLE IF NOT EXISTS users ( '+
-    //     'id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, '+
-    //     'username VARCHAR(255) NOT NULL, '+
-    //     'name VARCHAR(255) NOT NULL, '+
-    //     'email VARCHAR(255) NOT NULL, '+
-    //     'imgurl VARCHAR(255) NOT NULL '+
-    // ')';
-    // console.log(users);
-    // await conn.execute(users);
+    await conn.execute('DROP TABLE IF EXISTS users');
+    const users: string = 'CREATE TABLE IF NOT EXISTS users ( '+
+        'id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, '+
+        'username VARCHAR(255) NOT NULL, '+
+        'name VARCHAR(255) NOT NULL, '+
+        'email VARCHAR(255) NOT NULL, '+
+        'imgurl VARCHAR(255) NOT NULL '+
+    ')';
+    console.log(users);
+    await conn.execute(users);
 
     await conn.execute('DROP TABLE IF EXISTS auth');
     const auth: string = 'CREATE TABLE IF NOT EXISTS auth ( '+
@@ -51,7 +51,8 @@ export async function GET() {
         'profile BOOLEAN NOT NULL DEFAULT (true), '+
         'settings BOOLEAN NOT NULL DEFAULT (true), '+
         'boardcol INT NOT NULL DEFAULT (4), '+
-        'groupfilter VARCHAR(255) DEFAULT ("[]")'+
+        'groupfilter VARCHAR(255) DEFAULT ("[]"), '+
+        'imgtest LONGBLOB '+
     ')';
     console.log(custom);
     await conn.execute(custom);

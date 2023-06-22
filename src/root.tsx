@@ -14,6 +14,7 @@ import server$ from "solid-start/server";
 import { and, eq } from "drizzle-orm";
 
 import 'flowbite';
+import { GetAvatar, parseAvatar } from "./functions/uploads/Avatar";
 
 export default function Root() {
   const [path, setPath] = createSignal(useLocation().pathname);
@@ -36,7 +37,8 @@ export default function Root() {
   const [plannerCount, setPlannerCount] = createSignal(0);
   const [checkAuth, setCheckAuth] = createSignal(true)
   const [isauth, setAuth] = createStore(base_noauth);
-
+  const [imageUrl, setImageUrl] = createSignal("");
+  
   function updateState () {
     setTimeout(() => {
       setPath(window.location.pathname);
@@ -53,6 +55,12 @@ export default function Root() {
     }
     updateState();
     window.addEventListener('popstate', updateState);
+
+    const dataUrl = parseAvatar(await GetAvatar(Cookies.get("auth")!));
+    if (dataUrl) {
+      // @ts-ignore
+      setImageUrl(dataUrl);
+    }
   });
   
   return (
@@ -153,14 +161,40 @@ export default function Root() {
                             <li>
                                 {path() == "/profile" ?
                                   <p class="flex items-center p-2 text-black rounded-full bg-white dark:text-white dark:hover:bg-gray-700">
-                                    <img class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-xl"
-                                      src={isauth.user.imgurl.toString()} />
+                                    {imageUrl() ?
+                                      <img
+                                        src={imageUrl()}
+                                        alt="Profile Picture"
+                                        class={`flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-full`}
+                                        style={{ "max-width": '100%', "max-height": '100%', "object-fit": 'contain' }} 
+                                      />
+                                      :
+                                      <img
+                                        src={isauth.user.imgurl}
+                                        alt="Profile Picture"
+                                        class={`flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-full`}
+                                        style={{ "max-width": '100%', "max-height": '100%', "object-fit": 'contain' }} 
+                                      />
+                                    }
                                     <span class="flex-1 ml-3 whitespace-nowrap">{isauth.user.displayname}</span>
                                   </p>
                                   :
                                   <a onclick={() => {setCheckAuth(true); navigate("/profile")}} class="cursor-pointer flex items-center p-2 text-white rounded-full dark:text-white dark:hover:bg-gray-700">
-                                    <img class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-xl"
-                                      src={isauth.user.imgurl.toString()} />
+                                    {imageUrl() ?
+                                      <img
+                                        src={imageUrl()}
+                                        alt="Profile Picture"
+                                        class={`flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-full`}
+                                        style={{ "max-width": '100%', "max-height": '100%', "object-fit": 'contain' }} 
+                                      />
+                                      :
+                                      <img
+                                        src={isauth.user.imgurl}
+                                        alt="Profile Picture"
+                                        class={`flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white rounded-full`}
+                                        style={{ "max-width": '100%', "max-height": '100%', "object-fit": 'contain' }} 
+                                      />
+                                    }
                                     <span class="flex-1 ml-3 whitespace-nowrap">{isauth.user.displayname}</span>
                                   </a>
                                 }
