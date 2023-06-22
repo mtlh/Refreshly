@@ -23,6 +23,7 @@
     "@planetscale/database": "^1.7.0",
     "@solidjs/meta": "^0.28.2",
     "@solidjs/router": "^0.8.2",
+    "@supabase/supabase-js": "^2.26.0",
     "@thisbeyond/solid-dnd": "^0.7.4",
     "bcryptjs": "^2.4.3",
     "big.js": "^6.2.1",
