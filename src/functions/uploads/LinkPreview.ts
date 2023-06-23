@@ -1,6 +1,5 @@
 import server$ from "solid-start/server";
 import { getAuth } from "../getAuth";
-import axios from "axios";
 import { db } from "../db_client";
 import { planner } from "~/db/schema";
 import { and, eq } from "drizzle-orm";
@@ -9,8 +8,12 @@ export const GetPreview = server$(async (token: string, link:string) => {
 
     const auth_checked = await getAuth(token);
     if (auth_checked.loggedin == true) {
-        const metadata = await axios.get(`https://filmfront.vercel.app/api/Refreshly/LinkPreview?link=${link}`);
-        return metadata.data;
+        const response = await fetch(`https://filmfront.vercel.app/api/Refreshly/LinkPreview?link=${link}`);
+        if (!response.ok) {
+        throw new Error(`HTTP status code: ${response.status}`);
+        }
+        const metadata = await response.json();
+        return metadata;
     }
     return {};
 });
