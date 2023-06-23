@@ -245,12 +245,12 @@ export const PlannerBoard = (props: { type: string; }) => {
                   </DragOverlay>
                 </DragDropProvider>
                 <button onClick={() => {try {setItemStore("checklist", l => [...l, {checked: false, content: "new checklist"}])}catch{setItemStore("checklist", [{checked: false, content: "new checklist"}])}; setItems(createIdsArray(itemstore.checklist)); setItems(createIdsArray(itemstore.checklist)); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities(entities)}} 
-                  class="text-xl my-4 font-bold rounded-lg hover:ring-1 hover:ring-sky-600 w-full">
+                  class="bg-grey-100 text-2xl rounded-sm w-[95%] text-black p-1 my-1 hover:ring-2 m-auto">
                   +
                 </button>
               </ul>
             </div>
-            <button onclick={() => deletetask(itemstore.id)} class="py-1 w-full bg-red-500 text-white rounded-lg hover:bg-red-700">DELETE TASK</button>
+            <button onclick={() => deletetask(itemstore.id)} class="py-1 my-1 w-full bg-red-500 text-white rounded-lg hover:bg-red-700">DELETE TASK</button>
           </label>
         </label>
       </>

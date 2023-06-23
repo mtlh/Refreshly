@@ -66,7 +66,7 @@ export default function SettingsPage() {
         {isauth.loggedin == true &&
          <>
             <div class={`mx-auto p-4`}>
-              <div class={`items-center space-y-4 flex`}>
+              <div class={`items-center mb-6 flex`}>
                 {imageUrl() ?
                   <img
                     src={imageUrl()}
@@ -83,7 +83,7 @@ export default function SettingsPage() {
                   />
                 }
                 <div class="my-auto">
-                  <h2 class={`text-2xl font-bold`}>{username()}</h2>
+                  <h2 class={`text-4xl font-bold capitalize`}>{username()}</h2>
                   <h2 class={`text-xl font-medium`}>{email()}</h2>
                   <h2 class={`text-lg font-normal`}>{createdAt()}</h2>
                 </div>
@@ -95,7 +95,6 @@ export default function SettingsPage() {
                 accept=".svg, .png, .jpg, .jpeg, .gif" />
               <p class="mt-1 text-sm text-gray-500 dark:text-gray-300" id="file_input_help">SVG, PNG, JPG or GIF (MAX. 800x400px).</p>
               {file() && !validateFile(file()) && <p class="text-red-700">Please select a valid file (SVG, PNG, JPG, GIF) within the specified size limit.</p>}
-              {imageUrl() && <img src={imageUrl()} alt="Avatar" />}
             </div>
          </>
        }
