@@ -14,10 +14,10 @@ export const getEntities = async (nextID: number, nextOrder: number, entities: R
     const getAllEntities = server$(async (token:string|undefined) => {
         const auth_checked = await getAuth(token);
         if (auth_checked.loggedin == true) {
-        const userplanner = await db.select().from(planner).where(eq(planner.username, auth_checked.user.username));
-        return userplanner;
+            const userplanner = await db.select().from(planner).where(eq(planner.username, auth_checked.user.username));
+            return userplanner;
         } else {
-        return [];
+            return [];
         }
     })
     const planneritems = await getAllEntities(Cookies.get("auth"));

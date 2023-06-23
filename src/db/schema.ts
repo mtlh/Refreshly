@@ -53,5 +53,7 @@ export const planner = mysqlTable('planner', {
   description: varchar('description', {length: 256}),
   checklist: varchar('checklist', {length: 999999999999999}),
   priority: varchar('priority', {length: 256}),
-  lastupdate: timestamp('lastupdate').onUpdateNow().notNull()
+  lastupdate: timestamp('lastupdate').onUpdateNow().notNull(),
+  externallinks: varchar('externallinks', {length: 9999999}),
+  externalfiles: binary('externalfiles', {length: 999999})
 });

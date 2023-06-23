@@ -13,7 +13,7 @@ import {
   CollisionDetector,
   useDragDropContext,
 } from "@thisbeyond/solid-dnd";
-import { batch, createEffect, createSignal, For, onMount, VoidComponent} from "solid-js";
+import { batch, createEffect, createSignal, For, JSX, onMount, VoidComponent} from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import Big from "big.js";
 import Cookies from "js-cookie";
@@ -29,6 +29,7 @@ import { addGroup, addItem } from "~/functions/planner/addItemGroup";
 import { saveEntities } from "~/functions/planner/saveEntities";
 import { getEntities } from "~/functions/planner/getEntities";
 import { UpdateGroupShowFilter, getGroupShowFilter } from "~/functions/planner/filterGroupShow";
+import { GetPreview, LoadPreview, SavePreview } from "~/functions/uploads/LinkPreview";
 
 const sortByOrder = (entities: Entity[]) => {
   const sorted = entities.map((item) => ({ order: new Big(item.order), item }));
@@ -149,7 +150,33 @@ export const PlannerBoard = (props: { type: string; }) => {
       setIsDueClass(" bg-transparent ")
     }
   }, [itemstore.duedate]);
-    return (
+
+  const [files, setFiles] = createSignal<File[]>([]);
+  const [links, setLinks] = createSignal([]);
+
+  async function handleAddLink(event: any) {
+    event.preventDefault();
+    const inputValue = event.target.elements.link.value.trim();
+    if (inputValue != "") {
+      const resultpreview = await GetPreview(Cookies.get("auth")!, inputValue);
+      // @ts-ignore
+      setLinks(prevLinks => [...prevLinks, resultpreview]);
+      await SavePreview(Cookies.get("auth")!, links(), itemstore.id)
+    }
+  }
+  async function handleRemoveLink(index: number) {
+    setLinks((prevLinks) => prevLinks.filter((_, i) => i !== index));
+    await SavePreview(Cookies.get("auth")!, links(), itemstore.id)
+  }
+
+  createEffect(async () => {
+    let load = await LoadPreview(Cookies.get("auth")!, itemstore.id);
+    if (load != null) {
+      setLinks(load);
+    }
+  })
+  
+  return (
       <>
         <label
           for={itemstore.id.toString()}
@@ -223,6 +250,52 @@ export const PlannerBoard = (props: { type: string; }) => {
                 <span class="label-text">Description:</span>
               </label>
               <textarea class="textarea textarea-bordered h-full rounded-lg" value={itemstore.description} onChange={(e) => {setItemStore("description", e.target.value); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities(entities)}}></textarea>
+            </div>
+            <div class="form-control w-full my-1 m-auto">
+              <label class="label">
+                <span class="label-text">External Links:</span>
+              </label>
+              <form onSubmit={handleAddLink} class="grid grid-cols-4 gap-2">
+                <input type="text" name="link" placeholder="Enter a link" class="input col-span-3 border border-gray-200 rounded-sm" />
+                <button type="submit" class="bg-gray-200 rounded-sm hover:bg-gray-300">Add Link</button>
+              </form>
+            </div>
+            <div class="grid grid-cols-2 gap-4 my-1">
+              {links().map((link, index) => (
+                <div class="h-52 max-w-lg flex gap-4 relative bg-gray-200 border border-gray-300 rounded-lg shadow-lg">
+                  <button onClick={() => handleRemoveLink(index)} class="absolute top-0 right-0 h-10 w-10 bg-white">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="black"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      class="remove-icon"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                  <a href={link.url} target="_blank" rel="noopener noreferrer">
+                    {link.images[0] ?
+                    <img class="rounded-t-lg max-h-28" src={link.images[0]} alt="Preview Thumb Image" />
+                    :
+                    <>
+                      <br />
+                      <br />
+                      <br />
+                    </>
+                    }
+                    <div class="p-1 text-left">
+                        <h5 class="mb-1 text-sm font-bold tracking-tight text-gray-900 dark:text-white">{link.title}</h5>
+                        <p class="mb-1 font-normal text-gray-700 dark:text-gray-400 text-xs">{link.description}</p>
+                    </div>
+                  </a>
+                </div>
+              ))}
             </div>
             <div class="form-control w-full my-1 m-auto">
               <label class="label">

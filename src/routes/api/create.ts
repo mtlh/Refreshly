@@ -75,7 +75,9 @@ export async function GET() {
         'description VARCHAR(255), '+
         'checklist TEXT, '+
         'priority VARCHAR(255), '+
-        'lastupdate TIMESTAMP NOT NULL DEFAULT now() '+
+        'lastupdate TIMESTAMP NOT NULL DEFAULT now(), '+
+        'externallinks TEXT, '+
+        'externalfiles LONGBLOB '+
     ')';
     console.log(planner);
     await conn.execute(planner);

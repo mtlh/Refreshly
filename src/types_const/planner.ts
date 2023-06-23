@@ -27,6 +27,8 @@ export interface Item extends Base {
   checklist: checklist[];
   priority: string;
   lastupdate: Date;
+  externalfiles: any[];
+  externallinks: Object[]
 }
 
 export type Entity = Group | Item;

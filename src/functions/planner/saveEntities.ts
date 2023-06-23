@@ -31,7 +31,9 @@ export const saveEntities = async (entities: Record<Id, Entity>) => {
                 description: item.description,
                 checklist: JSON.stringify(item.checklist),
                 priority: item.priority,
-                lastupdate: new Date(item.lastupdate)
+                lastupdate: new Date(item.lastupdate),
+                externallinks: JSON.stringify(item.externallinks),
+                externalfiles: null
               }).where(and(eq(planner.id, item.id), eq(planner.username, auth_checked.user.username)))
             } else {
               const inserttasks = await db.insert(planner).values({
@@ -47,7 +49,9 @@ export const saveEntities = async (entities: Record<Id, Entity>) => {
                 description: item.description,
                 checklist: JSON.stringify(item.checklist),
                 priority: item.priority,
-                lastupdate: new Date(item.lastupdate)
+                lastupdate: new Date(item.lastupdate),
+                externallinks: JSON.stringify(item.externallinks),
+                externalfiles: null
               });
             }
           } else {
