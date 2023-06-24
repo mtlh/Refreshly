@@ -27,7 +27,7 @@ export interface Item extends Base {
   checklist: checklist[];
   priority: string;
   lastupdate: Date;
-  externalfiles: any[];
+  externalfiles: any;
   externallinks: Object[]
 }
 

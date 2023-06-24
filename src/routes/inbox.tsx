@@ -1,13 +1,16 @@
-import { createSignal } from "solid-js";
+import Cookies from "js-cookie";
+import { createEffect, createSignal } from "solid-js";
+import { LoadFiles, SaveFiles, convertToBlob, parseFile } from "~/functions/uploads/FileUpload";
 
-const MyComponent = () => {
+const Inbox = () => {
   const [files, setFiles] = createSignal<File[]>([]);
 
-  const handleFileChange = (event: Event) => {
+  const handleFileChange = async (event: Event) => {
     const input = event.target as HTMLInputElement;
     if (input.files) {
       const newFiles = Array.from(input.files);
       setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+      await SaveFiles(await convertToBlob(files()), Cookies.get("auth")!, 0)
     }
   };
 
@@ -20,26 +23,19 @@ const MyComponent = () => {
     URL.revokeObjectURL(url);
   };
 
-  const handleRemove = (file: File) => {
+  const handleRemove = async (file: File) => {
     setFiles((prevFiles) => prevFiles.filter((f) => f !== file));
+    await SaveFiles(await convertToBlob(files()), Cookies.get("auth")!, 0)
   };
 
-  const convertToFileObject = (blob: Blob, fileName: string): File => {
-    return new File([blob], fileName, { type: blob.type });
-  };
 
-  const handleConvertToBlob = (file: File) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      console.log(reader.result)
-      if (reader.result instanceof ArrayBuffer) {
-        const blob = new Blob([reader.result], { type: file.type });
-        const blobFile = convertToFileObject(blob, file.name);
-        console.log("Converted to Blob:", blobFile);
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  };
+  createEffect(async () => {
+    let files = await LoadFiles(Cookies.get("auth")!, 0)
+    files.forEach((element: string) => {
+      const file: File = parseFile(element);
+      setFiles((prevFiles) => [...prevFiles, ...[file]]);
+    });
+  })
 
   return (
     <div class="container mx-auto">
@@ -66,12 +62,6 @@ const MyComponent = () => {
                   >
                     Download
                   </button>
-                  <button
-                    class="ml-2 text-green-500"
-                    onClick={() => handleConvertToBlob(file)}
-                  >
-                    Convert to Blob
-                  </button>
                 </li>
               </>
             ))}
@@ -82,4 +72,5 @@ const MyComponent = () => {
   );
 };
 
-export default MyComponent;
+export default Inbox;
+
