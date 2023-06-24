@@ -32,6 +32,7 @@ const Inbox = () => {
   createEffect(async () => {
     let files = await LoadFiles(Cookies.get("auth")!, 0)
     files.forEach((element: string) => {
+      // @ts-ignore
       const file: File = parseFile(element);
       setFiles((prevFiles) => [...prevFiles, ...[file]]);
     });

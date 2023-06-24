@@ -74,17 +74,17 @@ export const parseFile = (dataUrl: string) => {
         const base64Str = original[1];
         const parts = base64Str.split(',');
         const mimeType = parts[0].split(':')[1].split(';')[0];
-    
-        // Extract the Base64 string without additional prefixes
-        const base64String = parts.slice(1).join(',');
-    
-        const binaryString = atob(base64String);
+
+        const base64Data = dataUrl.split(';base64,')[1];
+
+        const binaryString = atob(base64Data);
         const byteArray = new Uint8Array(binaryString.length);
-    
+
         for (let i = 0; i < binaryString.length; i++) {
-        byteArray[i] = binaryString.charCodeAt(i);
+            byteArray[i] = binaryString.charCodeAt(i);
         }
-        const file = new File([byteArray], fileName, { type: mimeType });
+
+        const file = new File([byteArray.buffer], fileName, { type: mimeType });
         return file;
 
     } catch { 
