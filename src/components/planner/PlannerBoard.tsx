@@ -31,6 +31,8 @@ import { getEntities } from "~/functions/planner/getEntities";
 import { UpdateGroupShowFilter, getGroupShowFilter } from "~/functions/planner/filterGroupShow";
 import { GetPreview, LoadPreview, SavePreview } from "~/functions/uploads/LinkPreview";
 import { LoadFiles, SaveFiles, convertToBlob, parseFile } from "~/functions/uploads/FileUpload";
+import { getProgressChoice } from "~/functions/planner/progressChoice";
+import { getPriorityChoice } from "~/functions/planner/priorityChoice";
 
 const sortByOrder = (entities: Entity[]) => {
   const sorted = entities.map((item) => ({ order: new Big(item.order), item }));
@@ -159,7 +161,6 @@ export const PlannerBoard = (props: { type: string; }) => {
     if (input.files) {
       const newFiles = Array.from(input.files);
       setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-      console.log(files(), itemstore.id)
       await SaveFiles(await convertToBlob(files()), Cookies.get("auth")!, itemstore.id)
     }
   };
@@ -188,6 +189,8 @@ export const PlannerBoard = (props: { type: string; }) => {
   })
 
   const [links, setLinks] = createSignal([]);
+  const [progressChoice, setProgressChoice] = createSignal(new Array());
+  const [priorityChoice, setPriorityChoice] = createSignal(new Array());
 
   async function handleAddLink(event: any) {
     event.preventDefault();
@@ -209,6 +212,10 @@ export const PlannerBoard = (props: { type: string; }) => {
     if (load != null) {
       setLinks(load);
     }
+    let progress: string[] = await getProgressChoice();
+    setProgressChoice(progress);
+    let priority: string[] = await getPriorityChoice();
+    setPriorityChoice(priority);
   })
   
   return (
@@ -222,13 +229,24 @@ export const PlannerBoard = (props: { type: string; }) => {
           classList={{ "opacity-25": sortable.isActiveDraggable }}
           >
             <p class="text-lg text-black w-full py-0.5 px-2.5 font-bold">{itemstore.name}</p>
-            {itemstore.priority == "Urgent" && <p class="bg-red-600 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.priority}</p>}
-            {itemstore.priority == "High" && <p class="bg-orange-500 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.priority}</p>}
-            {itemstore.priority == "Medium" && <p class="bg-yellow-300 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.priority}</p>}
-            {itemstore.priority == "Low" && <p class="bg-green-500 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.priority}</p>}
-            {itemstore.progress == "Completed" && <p class="bg-black text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.progress}</p>}
-            {itemstore.progress == "Ongoing" && <p class="bg-gray-700 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.progress}</p>}
-            {itemstore.progress == "Not Started" && <p class="bg-gray-400 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1">{itemstore.progress}</p>}
+            <For each={progressChoice()}>
+              {(progress) => (
+                <>
+                  {itemstore.progress == progress.name &&
+                    <p class={`text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1`} style={{background: progress.colour}}>{progress.name}</p>
+                  }
+                </>
+              )}
+            </For>
+            <For each={priorityChoice()}>
+              {(priority) => (
+                <>
+                  {itemstore.priority == priority.name &&
+                    <p class={`text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mx-2 my-1`} style={{background: priority.colour}}>{priority.name}</p>
+                  }
+                </>
+              )}
+            </For>
             <p class="text-sm text-black w-full py-0.5 px-2.5 mb-8 mt-1">{itemstore.description}</p>
             <div class="relative">
               {itemstore.checklist &&
@@ -261,10 +279,16 @@ export const PlannerBoard = (props: { type: string; }) => {
                   <span class="label-text">Progress:</span>
                 </label>
                 <select class="select" value={itemstore.progress} onChange={(e) => {setItemStore("progress", e.target.value); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities(entities)}}>
-                  <option>Completed</option>
-                  <option>Ongoing</option>
-                  <option>Not Started</option>
-                  <option></option>
+                  <option>{itemstore.progress}</option>
+                  <For each={progressChoice()}>
+                    {(progress) => (
+                      <>
+                        {itemstore.progress != progress.name &&
+                          <option>{progress.name}</option>
+                        }
+                     </>
+                    )}
+                  </For>
                 </select>
               </div>
               <div class="form-control w-full my-1 m-auto">
@@ -272,11 +296,16 @@ export const PlannerBoard = (props: { type: string; }) => {
                   <span class="label-text">Priority:</span>
                 </label>
                 <select class="select" value={itemstore.priority} onChange={(e) => {setItemStore("priority", e.target.value); setEntities(itemstore.id, itemstore); saveEntities(entities)}}>
-                  <option>Urgent</option>
-                  <option>High</option>
-                  <option>Medium</option>
-                  <option>Low</option>
-                  <option></option>
+                  <option>{itemstore.priority}</option>
+                  <For each={priorityChoice()}>
+                    {(priority) => (
+                      <>
+                        {itemstore.priority != priority.name &&
+                          <option>{priority.name}</option>
+                        }
+                     </>
+                    )}
+                  </For>
                 </select>
               </div>
             </div>
@@ -316,26 +345,18 @@ export const PlannerBoard = (props: { type: string; }) => {
               <label class="label">
                 <span class="label-text">Upload Files:</span>
               </label>
-            </div>
-            <div class="container mx-auto">
               {files().length > 0 && (
-                  <div class="list-disc pl-4">
+                  <div class="mb-2">
                     {files().map((file, index) => (
                         <>
                           {/* @ts-ignore */}
-                          <li class="text-gray-500" key={index}>
-                            {file.name}
-                            <button
-                              class="ml-2 text-red-500"
-                              onClick={() => {handleRemove(file)}}
-                            >
-                              Remove
+                          <li class="text-gray-500 items-center grid grid-cols-12" key={index}>
+                            <span class="mr-2 col-span-10 text-left">{file.name}</span>
+                            <button class="w-6 h-6" onClick={() => {handleDownload(file)}}>
+                              <svg viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.163 2.819C9 3.139 9 3.559 9 4.4V11H7.803c-.883 0-1.325 0-1.534.176a.75.75 0 0 0-.266.62c.017.274.322.593.931 1.232l4.198 4.401c.302.318.453.476.63.535a.749.749 0 0 0 .476 0c.177-.059.328-.217.63-.535l4.198-4.4c.61-.64.914-.96.93-1.233a.75.75 0 0 0-.265-.62C17.522 11 17.081 11 16.197 11H15V4.4c0-.84 0-1.26-.164-1.581a1.5 1.5 0 0 0-.655-.656C13.861 2 13.441 2 12.6 2h-1.2c-.84 0-1.26 0-1.581.163a1.5 1.5 0 0 0-.656.656zM5 21a1 1 0 0 0 1 1h12a1 1 0 1 0 0-2H6a1 1 0 0 0-1 1z" fill="black"></path></g></svg>
                             </button>
-                            <button
-                              class="ml-2 text-blue-500"
-                              onClick={() => {handleDownload(file)}}
-                            >
-                              Download
+                            <button class="ml-2 w-6 h-6" onClick={() => {handleRemove(file)}}>
+                                <svg fill="black" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>cross-round</title> <path d="M0 16q0 3.264 1.28 6.208t3.392 5.12 5.12 3.424 6.208 1.248 6.208-1.248 5.12-3.424 3.392-5.12 1.28-6.208-1.28-6.208-3.392-5.12-5.088-3.392-6.24-1.28q-3.264 0-6.208 1.28t-5.12 3.392-3.392 5.12-1.28 6.208zM4 16q0-3.264 1.6-6.016t4.384-4.352 6.016-1.632 6.016 1.632 4.384 4.352 1.6 6.016-1.6 6.048-4.384 4.352-6.016 1.6-6.016-1.6-4.384-4.352-1.6-6.048zM9.76 20.256q0 0.832 0.576 1.408t1.44 0.608 1.408-0.608l2.816-2.816 2.816 2.816q0.576 0.608 1.408 0.608t1.44-0.608 0.576-1.408-0.576-1.408l-2.848-2.848 2.848-2.816q0.576-0.576 0.576-1.408t-0.576-1.408-1.44-0.608-1.408 0.608l-2.816 2.816-2.816-2.816q-0.576-0.608-1.408-0.608t-1.44 0.608-0.576 1.408 0.576 1.408l2.848 2.816-2.848 2.848q-0.576 0.576-0.576 1.408z"></path> </g></svg>
                             </button>
                           </li>
                         </>
@@ -393,13 +414,13 @@ export const PlannerBoard = (props: { type: string; }) => {
                   </div>
                 ))}
               </div>
-              <form onSubmit={handleAddLink} class="grid grid-cols-4 gap-2">
+              <form onSubmit={handleAddLink} class="grid grid-cols-4 gap-2 my-1">
                 <input type="text" name="link" placeholder="Enter a link" class="input col-span-3 border border-gray-200 rounded-lg" />
                 <button type="submit" class="bg-gray-200 rounded-sm hover:bg-gray-300">Add Link</button>
               </form>
             </div>
             
-            <button onclick={() => deletetask(itemstore.id)} class="py-1 my-1 w-full bg-red-500 text-white rounded-lg hover:bg-red-700">DELETE TASK</button>
+            <button onclick={() => deletetask(itemstore.id)} class="py-1 my-2 w-full bg-red-500 text-white rounded-lg hover:bg-red-700">DELETE TASK</button>
           </label>
         </label>
       </>

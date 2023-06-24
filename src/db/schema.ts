@@ -36,7 +36,9 @@ export const customise = mysqlTable('customise', {
   //planner
   boardcol: int('boardcol').notNull().default(4),
   groupfilter: varchar('groupfilter', {length:256}).notNull().default("[]"),
-  imgtest: binary('imgtest', {length: 999999})
+  imgtest: binary('imgtest', {length: 999999}),
+  progresschoice: varchar('progresschoice', {length:256}).default("['', 'Not Started', 'Ongoing', 'Completed']"),
+  prioritychoice: varchar('prioritychoice', {length:256}).default("[]")
 });
 
 export const planner = mysqlTable('planner', {

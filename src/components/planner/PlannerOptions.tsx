@@ -12,6 +12,8 @@ import { saveEntities } from "~/functions/planner/saveEntities";
 import { Entity } from "~/types_const/planner";
 import { getEntities } from "~/functions/planner/getEntities";
 import { addGroup } from "~/functions/planner/addItemGroup";
+import { UpdateProgressChoice, getProgressChoice } from "~/functions/planner/progressChoice";
+import { UpdatePriorityChoice, getPriorityChoice } from "~/functions/planner/priorityChoice";
 
 export const ORDER_DELTA = 1;
 export const ID_DELTA = 1;
@@ -40,12 +42,25 @@ export const PlannerOptions = () => {
         for (var x in entities) { if (entities[x].type == "group") {tempgroup.push(entities[x]); nextID+=1; nextOrder+=1; }};
         setGroupCount(tempgroup);
     }, [entities])
+
+    const [progressChoice, setProgressChoice] = createSignal(new Array());
+    createEffect(async ()=> {
+      let progressChoice: string[] = await getProgressChoice();
+      setProgressChoice(progressChoice);
+    })
+
+    const [priorityChoice, setPriorityChoice] = createSignal(new Array());
+    createEffect(async ()=> {
+      let priorityChoice: string[] = await getPriorityChoice();
+      setPriorityChoice(priorityChoice);
+    })
+
     return (
         <>
-            <div class="grid grid-cols-2 p-2 text-left gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 p-2 text-left gap-6">
                 <div class="my-2 p-2 bg-gray-100 shadow-lg border-gray-400 rounded-md">
                   <p class="text-xl underline font-bold">Edit current groups:</p>
-                  <p>Please note these can be ordered by drag&drop within the board section.</p>
+                  <p class="my-1">Please note these can be ordered by drag&drop within the board section.</p>
                     <div class="grid grid-cols-1">
                       <For each={groupCount()}>{(group) =>
                         <>
@@ -75,6 +90,69 @@ export const PlannerOptions = () => {
                         let ordernum = nextOrder += 1;
                         addGroup(newid, "New Group", ordernum.toString(), setEntities);
                         saveEntities(entities);
+                    }}>
+                      +
+                    </button>
+                </div>
+                <div class="my-2 p-2 bg-gray-100 shadow-lg border-gray-400 rounded-md">
+                  <p class="text-xl underline font-bold">Edit progress options:</p>
+                    <p class="my-1">Please note for tasks to be registed as "Completed" a progress option with that name must exist.</p>
+                    <div class="grid grid-cols-1">
+                      <For each={progressChoice()}>{(progress, id) =>
+                        <>
+                          <div class="grid grid-cols-12 gap-2">
+                            <input value={progress.name} class="input my-1 col-span-9 rounded-lg"
+                            onchange={(e)=> {let current = progressChoice(); current[id()].name = e.target.value; setProgressChoice(current); UpdateProgressChoice(progressChoice())}} />
+                            <input type="color" class="rounded-full col-span-2 w-full h-8 m-auto" value={progress.colour}
+                            onchange={(e)=> {let current = progressChoice(); current[id()].colour = e.target.value; setProgressChoice(current); UpdateProgressChoice(progressChoice())}} />
+                            <button class="w-full rounded-lg my-1 col-span-1" onclick={async () => {
+                              if (progressChoice().length > 1) {
+                                setProgressChoice([...progressChoice().slice(0, id()), ...progressChoice().slice(id() + 1)]); UpdateProgressChoice(progressChoice())
+                              } else {
+                                setProgressChoice([]); UpdateProgressChoice(progressChoice());
+                              }
+                            }}>
+                              <svg viewBox="0 0 24 24" class="m-auto w-6" fill="black" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.73708 6.54391V18.9857C5.73708 19.7449 6.35257 20.3604 7.11182 20.3604H16.8893C17.6485 20.3604 18.264 19.7449 18.264 18.9857V6.54391M2.90906 6.54391H21.0909" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> <path d="M8 6V4.41421C8 3.63317 8.63317 3 9.41421 3H14.5858C15.3668 3 16 3.63317 16 4.41421V6" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> </g></svg>
+                            </button>
+                          </div>
+                        </>
+                      }</For>
+                    </div>
+                    <button
+                      class="text-3xl my-4 font-bold w-full rounded-lg hover:bg-sky-700 bg-sky-800 text-white py-0.5"
+                      onClick={()=> {
+                        setProgressChoice((prevChoices) => [...prevChoices, ...[{name: "Progress", colour: "#e66465"}]]); UpdateProgressChoice(progressChoice())
+                    }}>
+                      +
+                    </button>
+                </div>
+                <div class="my-2 p-2 bg-gray-100 shadow-lg border-gray-400 rounded-md">
+                  <p class="text-xl underline font-bold">Edit priority options:</p>
+                    <div class="grid grid-cols-1">
+                      <For each={priorityChoice()}>{(progress, id) =>
+                        <>
+                          <div class="grid grid-cols-12 gap-2">
+                            <input value={progress.name} class="input my-1 col-span-9 rounded-lg"
+                            onchange={(e)=> {let current = priorityChoice(); current[id()].name = e.target.value; setPriorityChoice(current); UpdatePriorityChoice(priorityChoice())}} />
+                            <input type="color" class="rounded-full col-span-2 w-full h-8 m-auto" value={progress.colour}
+                            onchange={(e)=> {let current = priorityChoice(); current[id()].colour = e.target.value; setPriorityChoice(current); UpdatePriorityChoice(priorityChoice())}} />
+                            <button class="w-full rounded-lg my-1 col-span-1" onclick={async () => {
+                              if (priorityChoice().length > 1) {
+                                setPriorityChoice([...priorityChoice().slice(0, id()), ...priorityChoice().slice(id() + 1)]); UpdatePriorityChoice(priorityChoice())
+                              } else {
+                                setPriorityChoice([]); UpdatePriorityChoice(priorityChoice());
+                              }
+                            }}>
+                              <svg viewBox="0 0 24 24" class="m-auto w-6" fill="black" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.73708 6.54391V18.9857C5.73708 19.7449 6.35257 20.3604 7.11182 20.3604H16.8893C17.6485 20.3604 18.264 19.7449 18.264 18.9857V6.54391M2.90906 6.54391H21.0909" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> <path d="M8 6V4.41421C8 3.63317 8.63317 3 9.41421 3H14.5858C15.3668 3 16 3.63317 16 4.41421V6" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> </g></svg>
+                            </button>
+                          </div>
+                        </>
+                      }</For>
+                    </div>
+                    <button
+                      class="text-3xl my-4 font-bold w-full rounded-lg hover:bg-sky-700 bg-sky-800 text-white py-0.5"
+                      onClick={()=> {
+                        setPriorityChoice((prevChoices) => [...prevChoices, ...[{name: "Priority", colour: "#e66465"}]]); UpdatePriorityChoice(priorityChoice())
                     }}>
                       +
                     </button>

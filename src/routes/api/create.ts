@@ -52,7 +52,9 @@ export async function GET() {
         'settings BOOLEAN NOT NULL DEFAULT (true), '+
         'boardcol INT NOT NULL DEFAULT (4), '+
         'groupfilter VARCHAR(255) DEFAULT ("[]"), '+
-        'imgtest LONGBLOB '+
+        'imgtest LONGBLOB, '+
+        'progresschoice VARCHAR(255) DEFAULT ("[]"), '+
+        'prioritychoice VARCHAR(255) DEFAULT ("[]") '+
     ')';
     console.log(custom);
     await conn.execute(custom);

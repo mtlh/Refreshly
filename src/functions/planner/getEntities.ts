@@ -41,7 +41,8 @@ export const getEntities = async (nextID: number, nextOrder: number, entities: R
                   description: entity.description!, 
                   checklist: JSON.parse(entity.checklist!),
                   priority: entity.priority!, 
-                  lastupdate: entity.lastupdate}, setEntities)
+                  // @ts-ignore
+                  lastupdate: entity.lastupdate, externalfiles: entity.externalfiles, externallinks: entity.externallinks}, setEntities)
             } else {
                 addGroup(entity.id, entity.name!, entity.ordernum!, setEntities)
             }
