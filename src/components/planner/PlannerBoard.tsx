@@ -30,6 +30,7 @@ import { saveEntities } from "~/functions/planner/saveEntities";
 import { getEntities } from "~/functions/planner/getEntities";
 import { UpdateGroupShowFilter, getGroupShowFilter } from "~/functions/planner/filterGroupShow";
 import { GetPreview, LoadPreview, SavePreview } from "~/functions/uploads/LinkPreview";
+import { LoadFiles, SaveFiles, convertToBlob, parseFile } from "~/functions/uploads/FileUpload";
 
 const sortByOrder = (entities: Entity[]) => {
   const sorted = entities.map((item) => ({ order: new Big(item.order), item }));
@@ -152,6 +153,40 @@ export const PlannerBoard = (props: { type: string; }) => {
   }, [itemstore.duedate]);
 
   const [files, setFiles] = createSignal<File[]>([]);
+
+  const handleFileChange = async (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    if (input.files) {
+      const newFiles = Array.from(input.files);
+      setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+      console.log(files(), itemstore.id)
+      await SaveFiles(await convertToBlob(files()), Cookies.get("auth")!, itemstore.id)
+    }
+  };
+
+  const handleDownload = (file: File) => {
+    const url = URL.createObjectURL(file);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = file.name;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleRemove = async (file: File) => {
+    setFiles((prevFiles) => prevFiles.filter((f) => f !== file));
+    await SaveFiles(await convertToBlob(files()), Cookies.get("auth")!, itemstore.id)
+  };
+
+  createEffect(async () => {
+    let filesarr = await LoadFiles(Cookies.get("auth")!, itemstore.id)
+    filesarr.forEach((element: string) => {
+      // @ts-ignore
+      const file: File = parseFile(element);
+      setFiles((prevFiles) => [...prevFiles, ...[file]]);
+    });
+  })
+
   const [links, setLinks] = createSignal([]);
 
   async function handleAddLink(event: any) {
@@ -253,52 +288,6 @@ export const PlannerBoard = (props: { type: string; }) => {
             </div>
             <div class="form-control w-full my-1 m-auto">
               <label class="label">
-                <span class="label-text">External Links:</span>
-              </label>
-              <form onSubmit={handleAddLink} class="grid grid-cols-4 gap-2">
-                <input type="text" name="link" placeholder="Enter a link" class="input col-span-3 border border-gray-200 rounded-sm" />
-                <button type="submit" class="bg-gray-200 rounded-sm hover:bg-gray-300">Add Link</button>
-              </form>
-            </div>
-            <div class="grid grid-cols-2 gap-4 my-1">
-              {links().map((link, index) => (
-                <div class="h-52 max-w-lg flex gap-4 relative bg-gray-200 border border-gray-300 rounded-lg shadow-lg">
-                  <button onClick={() => handleRemoveLink(index)} class="absolute top-0 right-0 h-10 w-10 bg-white">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="black"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      class="remove-icon"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                  <a href={link.url} target="_blank" rel="noopener noreferrer">
-                    {link.images[0] ?
-                    <img class="rounded-t-lg max-h-28" src={link.images[0]} alt="Preview Thumb Image" />
-                    :
-                    <>
-                      <br />
-                      <br />
-                      <br />
-                    </>
-                    }
-                    <div class="p-1 text-left">
-                        <h5 class="mb-1 text-sm font-bold tracking-tight text-gray-900 dark:text-white">{link.title}</h5>
-                        <p class="mb-1 font-normal text-gray-700 dark:text-gray-400 text-xs">{link.description}</p>
-                    </div>
-                  </a>
-                </div>
-              ))}
-            </div>
-            <div class="form-control w-full my-1 m-auto">
-              <label class="label">
                 <span class="label-text">Checklist:</span>
               </label>
               <ul>
@@ -323,6 +312,93 @@ export const PlannerBoard = (props: { type: string; }) => {
                 </button>
               </ul>
             </div>
+            <div class="form-control w-full my-1 m-auto">
+              <label class="label">
+                <span class="label-text">Upload Files:</span>
+              </label>
+            </div>
+            <div class="container mx-auto">
+              {files().length > 0 && (
+                  <div class="list-disc pl-4">
+                    {files().map((file, index) => (
+                        <>
+                          {/* @ts-ignore */}
+                          <li class="text-gray-500" key={index}>
+                            {file.name}
+                            <button
+                              class="ml-2 text-red-500"
+                              onClick={() => {handleRemove(file)}}
+                            >
+                              Remove
+                            </button>
+                            <button
+                              class="ml-2 text-blue-500"
+                              onClick={() => {handleDownload(file)}}
+                            >
+                              Download
+                            </button>
+                          </li>
+                        </>
+                      ))}
+                  </div>
+              )}
+              <div class="flex items-center justify-center w-full">
+                  <label class="flex flex-col items-center justify-center w-full h-16 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                      <div class="flex flex-col items-center justify-center pt-2 pb-2">
+                          <svg aria-hidden="true" class="w-8 h-8 mt-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                          <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span></p>
+                      </div>
+                      <input type="file" class="hidden mb-4" multiple onChange={handleFileChange}  />
+                  </label>
+              </div>
+            </div>
+            <div class="form-control w-full my-1 m-auto">
+              <label class="label">
+                <span class="label-text">External Links:</span>
+              </label>
+              <div class="grid grid-cols-2 gap-4 my-1">
+                {links().map((link, index) => (
+                  <div class="h-52 max-w-lg flex gap-4 relative bg-gray-200 border border-gray-300 rounded-lg shadow-lg">
+                    <button onClick={() => handleRemoveLink(index)} class="absolute top-0 right-0 h-10 w-10 bg-white">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="black"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        class="remove-icon"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                    <a href={link.url} target="_blank" rel="noopener noreferrer">
+                      {link.images[0] ?
+                      <img class="rounded-t-lg max-h-28" src={link.images[0]} alt="Preview Thumb Image" />
+                      :
+                      <>
+                        <br />
+                        <br />
+                        <br />
+                      </>
+                      }
+                      <div class="p-1 text-left">
+                          <h5 class="mb-1 text-sm font-bold tracking-tight text-gray-900 dark:text-white">{link.title}</h5>
+                          <p class="mb-1 font-normal text-gray-700 dark:text-gray-400 text-xs">{link.description}</p>
+                      </div>
+                    </a>
+                  </div>
+                ))}
+              </div>
+              <form onSubmit={handleAddLink} class="grid grid-cols-4 gap-2">
+                <input type="text" name="link" placeholder="Enter a link" class="input col-span-3 border border-gray-200 rounded-lg" />
+                <button type="submit" class="bg-gray-200 rounded-sm hover:bg-gray-300">Add Link</button>
+              </form>
+            </div>
+            
             <button onclick={() => deletetask(itemstore.id)} class="py-1 my-1 w-full bg-red-500 text-white rounded-lg hover:bg-red-700">DELETE TASK</button>
           </label>
         </label>
