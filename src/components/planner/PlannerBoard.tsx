@@ -113,7 +113,7 @@ export const PlannerBoard = (props: { type: string; }) => {
     const sortable = createSortable(props.item);
     const [state] = useDragDropContext();
     return (
-      <div class="grid grid-cols-12 sortable" use:sortable classList={{"opacity-80": sortable.isActiveDraggable, "transition-transform": !!state.active.draggable}}>
+      <div class="grid grid-cols-12 sortable mr-2" use:sortable classList={{"opacity-80": sortable.isActiveDraggable, "transition-transform": !!state.active.draggable}}>
         <div class="col-span-1 m-auto">
           {itemstore.checklist[props.item].checked ?
             <button onclick={() => {setItemStore("checklist", props.item, {checked: !itemstore.checklist[props.item].checked, content: itemstore.checklist[props.item].content}); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities(entities)}}>
@@ -210,7 +210,7 @@ export const PlannerBoard = (props: { type: string; }) => {
       setFiles((prevFiles) => [...prevFiles, ...[file]]);
     });
   })
-  console.log(priorityChoice(), progressChoice())
+
   return (
       <>
         <label
@@ -218,7 +218,7 @@ export const PlannerBoard = (props: { type: string; }) => {
         >
           <div
           use:sortable
-          class="sortable bg-gray-100 rounded-lg p-1 m-2 text-left ring-1 ring-gray-300 shadow-sm container hover:shadow-2xl"
+          class="sortable bg-gray-100 rounded-lg p-1 text-left ring-1 ring-gray-300 shadow-sm container hover:shadow-2xl w-[92%] m-2"
           classList={{ "opacity-25": sortable.isActiveDraggable }}
           >
             <p class="text-lg text-black w-full py-0.5 px-2.5 font-bold">{itemstore.name}</p>
@@ -461,7 +461,7 @@ export const PlannerBoard = (props: { type: string; }) => {
         <div class={"column-header text-2xl mb-2 text-left p-2"} {...sortable.dragActivators}>
           {props.name}
         </div>
-        <div class="column cursor-move">
+        <div class="column cursor-move overflow-y-auto" style={{ "max-height": "60vh" }}>
           <SortableProvider ids={sortedItemIds()}>
             <For each={props.items}>
               {(item) => (
@@ -509,7 +509,7 @@ export const PlannerBoard = (props: { type: string; }) => {
             </svg>
           </button>
           {isOpen() && (
-            <div class="absolute z-40 w-full mt-2 rounded-lg">
+            <div class="absolute z-40 w-full mt-2 rounded-lg overflow-y-auto" style={{"max-height":"60vh"}}>
               <div class="column cursor-move">
                 <SortableProvider ids={sortedItemIds()}>
                   <For each={props.items}>
@@ -751,7 +751,7 @@ export const PlannerBoard = (props: { type: string; }) => {
         <>    
           <div class="relative">
             <div class="absolute dropdown dropdown-bottom dropdown-end top-0 right-0 -translate-y-14 z-30">
-              <label tabindex="0" class="btn flex text-lg bg-gray-100 rounded-lg m-1 text-black hover:bg-gray-200 capitalize border-0">
+              <label tabindex="0" class="btn flex text-md md:text-lg bg-gray-100 rounded-lg m-1 text-black hover:bg-gray-200 capitalize border-0">
                 Filter
                 <svg class="w-6 h-6 ml-2" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill-rule="evenodd" clip-rule="evenodd" d="M15 10.5A3.502 3.502 0 0 0 18.355 8H21a1 1 0 1 0 0-2h-2.645a3.502 3.502 0 0 0-6.71 0H3a1 1 0 0 0 0 2h8.645A3.502 3.502 0 0 0 15 10.5zM3 16a1 1 0 1 0 0 2h2.145a3.502 3.502 0 0 0 6.71 0H21a1 1 0 1 0 0-2h-9.145a3.502 3.502 0 0 0-6.71 0H3z" fill="#000000"></path></g></svg>
               </label>
@@ -779,7 +779,7 @@ export const PlannerBoard = (props: { type: string; }) => {
             </div>
           </div>
           {/* <div class={`grid gap-2 p-2 self-stretch grid-cols-2 md:grid-cols-3 lg:grid-cols-${boardcol()}`}></div> */}
-          <div class={`grid gap-2 p-2 self-stretch grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6`}>
+          <div class={`grid gap-2 p-2 self-stretch grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5`}>
             <DragDropProvider
               onDragOver={onDragOver}
               onDragEnd={(e)=> {onDragEnd(e); saveEntities(entities)}}
