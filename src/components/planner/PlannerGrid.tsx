@@ -1,13 +1,14 @@
 import { For, batch, createEffect, createSignal, onMount } from "solid-js";
 import { createStore } from "solid-js/store";
 import { Id } from "@thisbeyond/solid-dnd";
-import { Entity, Group, Item } from "~/types_const/planner";
+import { Entity, Item } from "~/types_const/planner";
 import { getEntities } from "~/functions/planner/getEntities";
 import { getProgressChoice } from "~/functions/planner/progressChoice";
 import { getPriorityChoice } from "~/functions/planner/priorityChoice";
 import moment from "moment";
+import { SortableVerticalListExample } from "../verticallist";
 
-export const PlannerGrid = () => {
+export const PlannerGrid = (props: {type: string}) => {
     let nextOrder = 1;
     let nextID = 1;
 
@@ -38,7 +39,7 @@ export const PlannerGrid = () => {
 
     return (
         <>
-            
+          <SortableVerticalListExample />
             <div class="relative overflow-x-auto m-2">
                 <table class="w-full text-sm text-left text-gray-500">
                     <thead class="text-sm text-gray-700 uppercase bg-gray-200">
@@ -81,6 +82,8 @@ export const PlannerGrid = () => {
                     <tbody>
                         <For each={allTask()}>{ (task: Item) => 
                             <>
+                            {/* <input type="checkbox" id={task.id.toString()} class="modal-toggle" />
+                            <TaskItem item={task} entities={entities} setEntities={setEntities} progressChoice={progressChoice()} priorityChoice={priorityChoice()} type={props.type} /> */}
                             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     {task.name}
