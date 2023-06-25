@@ -24,36 +24,31 @@ export const PlannerOptions = () => {
 
     const [entities, setEntities] = createStore<Record<Id, Entity>>({});
 
-    const [boardcol, SetBoardCol] = createSignal(0);
-    const increment = () => {UpdateBoardCol(boardcol() + 1); SetBoardCol(boardcol() + 1)};
-    const decrement = () => {UpdateBoardCol(boardcol() - 1); SetBoardCol(boardcol() - 1)};
+    // const [boardcol, SetBoardCol] = createSignal(0);
+    // const increment = () => {UpdateBoardCol(boardcol() + 1); SetBoardCol(boardcol() + 1)};
+    // const decrement = () => {UpdateBoardCol(boardcol() - 1); SetBoardCol(boardcol() - 1)};
+
+    const [groupCount, setGroupCount] = createSignal(new Array());
+    const [progressChoice, setProgressChoice] = createSignal(new Array());
+    const [priorityChoice, setPriorityChoice] = createSignal(new Array());
 
     const setup = () => {
     batch(async () => {
         let ent = await getEntities(nextID, nextOrder, entities, setEntities); nextID = ent.nextID; nextOrder = ent.nextOrder;
-        SetBoardCol(await getBoardCol());
+        // SetBoardCol(await getBoardCol());
+        let progressChoice: string[] = await getProgressChoice();
+        setProgressChoice(progressChoice);
+        let priorityChoice: string[] = await getPriorityChoice();
+        setPriorityChoice(priorityChoice);
     });
     };
     onMount(setup);
-
-    const [groupCount, setGroupCount] = createSignal(new Array());
+    
     createEffect(() => {
         let tempgroup = [];
         for (var x in entities) { if (entities[x].type == "group") {tempgroup.push(entities[x]); nextID+=1; nextOrder+=1; }};
         setGroupCount(tempgroup);
     }, [entities])
-
-    const [progressChoice, setProgressChoice] = createSignal(new Array());
-    createEffect(async ()=> {
-      let progressChoice: string[] = await getProgressChoice();
-      setProgressChoice(progressChoice);
-    })
-
-    const [priorityChoice, setPriorityChoice] = createSignal(new Array());
-    createEffect(async ()=> {
-      let priorityChoice: string[] = await getPriorityChoice();
-      setPriorityChoice(priorityChoice);
-    })
 
     return (
         <>

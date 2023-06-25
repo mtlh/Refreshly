@@ -179,18 +179,7 @@ export const PlannerBoard = (props: { type: string; }) => {
     await SaveFiles(await convertToBlob(files()), Cookies.get("auth")!, itemstore.id)
   };
 
-  createEffect(async () => {
-    let filesarr = await LoadFiles(Cookies.get("auth")!, itemstore.id)
-    filesarr.forEach((element: string) => {
-      // @ts-ignore
-      const file: File = parseFile(element);
-      setFiles((prevFiles) => [...prevFiles, ...[file]]);
-    });
-  })
-
   const [links, setLinks] = createSignal([]);
-  const [progressChoice, setProgressChoice] = createSignal(new Array());
-  const [priorityChoice, setPriorityChoice] = createSignal(new Array());
 
   async function handleAddLink(event: any) {
     event.preventDefault();
@@ -208,16 +197,20 @@ export const PlannerBoard = (props: { type: string; }) => {
   }
 
   createEffect(async () => {
+    // Previews
     let load = await LoadPreview(Cookies.get("auth")!, itemstore.id);
     if (load != null) {
       setLinks(load);
     }
-    let progress: string[] = await getProgressChoice();
-    setProgressChoice(progress);
-    let priority: string[] = await getPriorityChoice();
-    setPriorityChoice(priority);
+    // Files
+    let filesarr = await LoadFiles(Cookies.get("auth")!, itemstore.id)
+    filesarr.forEach((element: string) => {
+      // @ts-ignore
+      const file: File = parseFile(element);
+      setFiles((prevFiles) => [...prevFiles, ...[file]]);
+    });
   })
-  
+  console.log(priorityChoice(), progressChoice())
   return (
       <>
         <label
@@ -587,6 +580,9 @@ export const PlannerBoard = (props: { type: string; }) => {
   const [boardcol, SetBoardCol] = createSignal(0);
   const [groupfilter, SetGroupFilter] = createSignal(Array.from({length: groups().length}, () => true));
 
+  const [progressChoice, setProgressChoice] = createSignal(0);
+  const [priorityChoice, setPriorityChoice] = createSignal(0);
+
   function updateGroupFilterAtIndex(index: number, newValue: boolean) {
     SetGroupFilter(produce((draft) => {
       draft[index] = newValue;
@@ -597,13 +593,17 @@ export const PlannerBoard = (props: { type: string; }) => {
     batch(async () => {
       let ent = await getEntities(nextID, nextOrder, entities, setEntities); nextID = ent.nextID; nextOrder = ent.nextOrder;
 
-      createEffect(async ()=> {
-        SetGroupFilter(await getGroupShowFilter());
-      }, []);
+      SetGroupFilter(await getGroupShowFilter());
 
-      createEffect(async ()=> {
-        SetBoardCol(await getBoardCol());
-      }, []);
+      SetBoardCol(await getBoardCol());
+
+      // Progress/Priority Options
+      let priority: string[] = await getPriorityChoice();
+      // @ts-ignore
+      setPriorityChoice(priority);
+      let progress: string[] = await getProgressChoice();
+      // @ts-ignore
+      setProgressChoice(progress);
     });
   };
 
@@ -747,7 +747,7 @@ export const PlannerBoard = (props: { type: string; }) => {
   
   return (
     <>
-      {(boardcol() != 0 && JSON.stringify(groupfilter()[0]) != "") ? 
+      {(boardcol() != 0 && JSON.stringify(groupfilter()[0]) != "" && priorityChoice() != 0 && progressChoice() != 0) ? 
         <>    
           <div class="relative">
             <div class="absolute dropdown dropdown-bottom dropdown-end top-0 right-0 -translate-y-14 z-30">
