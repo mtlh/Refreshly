@@ -27,7 +27,7 @@ import { getProgressChoice } from "~/functions/planner/progressChoice";
 import { getPriorityChoice } from "~/functions/planner/priorityChoice";
 import { TaskItem } from "./ItemModal";
 
-const sortByOrder = (entities: Entity[]) => {
+export const sortByOrder = (entities: Entity[]) => {
   const sorted = entities.map((item) => ({ order: new Big(item.order), item }));
   sorted.sort((a, b) => a.order.cmp(b.order));
   return sorted.map((entry) => entry.item);

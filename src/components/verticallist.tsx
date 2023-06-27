@@ -59,7 +59,7 @@ export const SortableVerticalListExample = () => {
         </SortableProvider>
       </div>
       <DragOverlay>
-        <div class="sortable">{activeItem()}</div>
+        <div class="sortable"></div>
       </DragOverlay>
     </DragDropProvider>
   );
