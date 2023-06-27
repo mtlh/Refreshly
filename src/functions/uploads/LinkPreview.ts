@@ -33,6 +33,21 @@ export const LoadPreview = server$(async (token: string, id: number) => {
     return [];
 });
 
+export const LoadPreviewFromString = server$(async (token: string, externallinks: string) => {
+
+    const auth_checked = await getAuth(token);
+    if (auth_checked.loggedin == true) {
+        // const auth_checked = await getAuth(token);
+        // const userplanner = await db.select().from(planner).where(and(eq(planner.username, auth_checked.user.username), eq(planner.id, id)));
+        if (JSON.parse(externallinks!)) {
+            return JSON.parse(externallinks!);
+        } else {
+            return [];
+        }
+    }
+    return [];
+});
+
 export const SavePreview = server$(async (token: string, datalist: Object[], id: number) => {
 
     const auth_checked = await getAuth(token);

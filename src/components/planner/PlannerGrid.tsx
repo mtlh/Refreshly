@@ -16,6 +16,8 @@ import {
   closestCenter,
 } from "@thisbeyond/solid-dnd";
 import { TaskItem } from "./ItemModal";
+import { gridOrderUpdate } from "~/functions/planner/gridOrderUpdate";
+import Cookies from "js-cookie";
 
 const Sortable = (props: {allgroup: any[], type: string, entities: Record<Id, Entity>, setEntities: any, progressChoice: {name:string, colour:string}[], priorityChoice: {name:string, colour:string}[], item: Item}) => {
     const sortable = createSortable(props.item.id);
@@ -37,7 +39,7 @@ const Sortable = (props: {allgroup: any[], type: string, entities: Record<Id, En
                 <table class="w-full text-md text-left text-gray-500 overflow-x-auto">
                     <tbody>
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 grid grid-cols-4 md:grid-cols-6 gap-6">
-                            <th scope="row" class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            <th scope="row" class="px-4 py-2 font-medium text-gray-900 dark:text-white">
                                 {props.item.name}
                             </th>
                             <td class="px-4 py-2">
@@ -45,7 +47,7 @@ const Sortable = (props: {allgroup: any[], type: string, entities: Record<Id, En
                                     {(group) => (
                                         <>
                                         {group.id == props.item.group &&
-                                            <p class={`text-gray-900 whitespace-nowrap`}>{group.name}</p>
+                                            <p class={`text-gray-900`}>{group.name}</p>
                                         }
                                         </>
                                     )}
@@ -115,21 +117,20 @@ export const PlannerGrid = (props: {type: string}) => {
         let priorityChoice: string[] = await getPriorityChoice();
         // @ts-ignore
         setPriorityChoice(priorityChoice);
+
+        let allgroups = []; let alltasks = [];
+        for (var x in entities) { if (entities[x].type == "group") {allgroups.push(entities[x])} else {alltasks.push(entities[x])} nextID+=1; nextOrder+=1;};
+        allgroups.sort((a, b) => parseFloat(a.order) - parseFloat(b.order));
+        alltasks.sort((a, b) => parseFloat(a.order) - parseFloat(b.order));
+        setAllTasks(alltasks); setAllGroup(allgroups);
     });
     };
     onMount(setup);
-    
-    createEffect(() => {
-        let allgroups = []; let alltasks = [];
-        for (var x in entities) { if (entities[x].type == "group") {allgroups.push(entities[x])} else {alltasks.push(entities[x])} nextID+=1; nextOrder+=1;};
-        setAllTasks(alltasks); setAllGroup(allgroups);
-    }, [entities])
 
     const IDS = () => AllTasks().map((task) => task.id);
 
-    const onDragEnd = ({ draggable, droppable }) => {
+    const onDragEnd = async ({ draggable, droppable }) => {
         if (draggable && droppable) {
-            console.log(draggable, droppable);
             const currentTasks = AllTasks();
             const fromIndex = currentTasks.findIndex((task) => task.id === draggable.id);
             const toIndex = currentTasks.findIndex((task) => task.id === droppable.id);
@@ -137,6 +138,7 @@ export const PlannerGrid = (props: {type: string}) => {
                 const updatedTasks = currentTasks.slice();
                 updatedTasks.splice(toIndex, 0, ...updatedTasks.splice(fromIndex, 1));
                 setAllTasks(updatedTasks);
+                await gridOrderUpdate(Cookies.get("auth"), draggable.id, droppable.id)
             }
         }
     };
@@ -145,7 +147,7 @@ export const PlannerGrid = (props: {type: string}) => {
         <>
             {priorityChoice() != 0 && progressChoice() != 0 &&
             <>
-                <div class="relative overflow-x-auto">
+                <div class="relative">
                     <table class="w-full text-sm text-left text-gray-500">
                         <thead class="text-sm text-gray-700 uppercase bg-gray-200">
                             <tr class="grid grid-cols-6 gap-6">

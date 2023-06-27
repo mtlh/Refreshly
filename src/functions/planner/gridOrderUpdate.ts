@@ -1,13 +1,18 @@
-import { eq } from "drizzle-orm";
 import server$ from "solid-start/server";
-import { customise } from "~/db/schema";
-import { db } from "../db_client";
 import { getAuth } from "../getAuth";
-import { Item } from "~/types_const/planner";
+import { config } from "../db_config";
+import { connect } from "@planetscale/database";
 
-const gridOrderUpdate = server$(async (token:string|undefined, allTasks: Item[]) => {
+const conn = connect(config);
+
+export const gridOrderUpdate = server$(async (token:string|undefined, id1: number, id2: number) => {
     const auth_checked = await getAuth(token);
     if (auth_checked.loggedin == true) {
-      //const gridOrderUpdate = await db.update(customise).set({progresschoice: JSON.stringify(progresschoice)}).where(eq(customise.username, auth_checked.user.username));
+
+      const queryString = "UPDATE planner SET ordernum = CASE WHEN id = ? THEN (SELECT ordernum FROM (SELECT ordernum FROM planner WHERE id = ?) AS t) WHEN id = ? THEN (SELECT ordernum FROM (SELECT ordernum FROM planner WHERE id = ?) AS t) ELSE ordernum END WHERE id IN (?, ?)";
+
+      const execidswap = await conn.execute(queryString, [id1, id2, id2, id1, id1, id2]);
+
+      console.log(execidswap);
     }
 })

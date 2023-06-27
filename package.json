@@ -1,7 +1,7 @@
 {
   "name": "solidauth-demo",
   "scripts": {
-    "dev": "solid-start dev -p 3008",
+    "dev": "solid-start dev -p 3010",
     "build": "solid-start build",
     "start": "solid-start start"
   },

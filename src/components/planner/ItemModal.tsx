@@ -9,8 +9,8 @@ import { planner } from "~/db/schema";
 import { db } from "~/functions/db_client";
 import { getAuth } from "~/functions/getAuth";
 import { saveEntities } from "~/functions/planner/saveEntities";
-import { SaveFiles, convertToBlob, LoadFiles, parseFile } from "~/functions/uploads/FileUpload";
-import { GetPreview, SavePreview, LoadPreview } from "~/functions/uploads/LinkPreview";
+import { SaveFiles, convertToBlob, LoadFiles, parseFile, GetFilesFromEntitiesString, GetFilesFromString } from "~/functions/uploads/FileUpload";
+import { GetPreview, SavePreview, LoadPreview, LoadPreviewFromString } from "~/functions/uploads/LinkPreview";
 import { Entity, checklist } from "~/types_const/planner";
 import { Item } from "~/types_const/planner";
 
@@ -141,12 +141,12 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
 
   createEffect(async () => {
     // Previews
-    let load = await LoadPreview(Cookies.get("auth")!, itemstore.id);
+    let load = await LoadPreviewFromString(Cookies.get("auth")!, itemstore.externallinks.toString());
     if (load != null) {
       setLinks(load);
     }
     // Files
-    let filesarr = await LoadFiles(Cookies.get("auth")!, itemstore.id)
+    let filesarr = await GetFilesFromString(Cookies.get("auth")!, itemstore.externalfiles)
     filesarr.forEach((element: string) => {
       // @ts-ignore
       const file: File = parseFile(element);
@@ -155,6 +155,7 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
     
   })
 
+  console.log(props.entities)
   return (
       <>
         <label for={itemstore.id.toString()} class="modal cursor-pointer z-50">

@@ -40,6 +40,22 @@ export const LoadFiles = server$(async (token: string, index: number) => {
     return [];
 });
 
+export const GetFilesFromString = server$(async (token: string, externalfiles: string) => {
+
+    const auth_checked = await getAuth(token);
+    if (auth_checked.loggedin == true) {
+        try {
+            // @ts-ignore
+            let result = externalfiles.split("$");
+            result.pop();
+            return result;
+        } catch {
+            return [];
+        }
+    }
+    return [];
+});
+
 
 export const convertToBlob = async (files: File[]) => {
     const blobarr: any[] = [];
