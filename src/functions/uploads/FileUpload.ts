@@ -13,7 +13,6 @@ export const SaveFiles = server$(async (blobArr: any[], token: string, index: nu
         blobArr.forEach((text: string)=> {
             textresult += text + "$"
         });
-        console.log(index, "UPDATE FOR ID")
         const updatefileblob: string = 'UPDATE planner SET externalfiles = ? WHERE username = ? AND id = ?';
         const fileupdate = await conn.execute(updatefileblob, [textresult, auth_checked.user.username, index]);
         return true;

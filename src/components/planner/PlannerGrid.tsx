@@ -75,14 +75,14 @@ const Sortable = (props: {allgroup: any[], type: string, entities: Record<Id, En
                                     )}
                                 </For>
                             </td>
-                            <td class="px-4 py-2">
+                            <td class="px-4 py-2 hidden md:flex">
                                 {props.item.startdate ?
                                     moment(props.item.startdate).format("DD/MM/YYYY")
                                     :
                                     "-"
                                 }
                             </td>
-                            <td class="px-4 py-2">
+                            <td class="px-4 py-2 hidden md:flex">
                                 {props.item.duedate ?
                                     moment(props.item.duedate).format("DD/MM/YYYY")
                                     :
@@ -108,6 +108,8 @@ export const PlannerGrid = (props: {type: string}) => {
     const [AllTasks, setAllTasks] = createSignal(new Array());
     const [allGroup, setAllGroup] = createSignal(new Array());
 
+    const [completed_count, setCompletedCount] = createSignal(0);
+
     const setup = () => {
     batch(async () => {
         let ent = await getEntities(nextID, nextOrder, entities, setEntities); nextID = ent.nextID; nextOrder = ent.nextOrder;
@@ -123,9 +125,16 @@ export const PlannerGrid = (props: {type: string}) => {
         allgroups.sort((a, b) => parseFloat(a.order) - parseFloat(b.order));
         alltasks.sort((a, b) => parseFloat(a.order) - parseFloat(b.order));
         setAllTasks(alltasks); setAllGroup(allgroups);
+
+        setCompletedCount(AllTasks().filter(item => item.progress === 'Completed').length);
     });
     };
     onMount(setup);
+
+    const [isOpen, setIsOpen] = createSignal(false);
+    const toggleDropdown = () => {
+        setIsOpen(!isOpen());
+      };
 
     const IDS = () => AllTasks().map((task) => task.id);
 
@@ -138,7 +147,7 @@ export const PlannerGrid = (props: {type: string}) => {
                 const updatedTasks = currentTasks.slice();
                 updatedTasks.splice(toIndex, 0, ...updatedTasks.splice(fromIndex, 1));
                 setAllTasks(updatedTasks);
-                await gridOrderUpdate(Cookies.get("auth"), draggable.id, droppable.id)
+                await gridOrderUpdate(Cookies.get("auth"), draggable.id, droppable.id, AllTasks())
             }
         }
     };
@@ -150,7 +159,7 @@ export const PlannerGrid = (props: {type: string}) => {
                 <div class="relative">
                     <table class="w-full text-sm text-left text-gray-500">
                         <thead class="text-sm text-gray-700 uppercase bg-gray-200">
-                            <tr class="grid grid-cols-6 gap-6">
+                            <tr class="grid grid-cols-4 md:grid-cols-6 gap-6">
                                 <th scope="col" class="px-4 py-2">
                                     Task Name
                                 </th>
@@ -163,10 +172,10 @@ export const PlannerGrid = (props: {type: string}) => {
                                 <th scope="col" class="px-4 py-2">
                                     Progress
                                 </th>
-                                <th scope="col" class="px-4 py-2">
+                                <th scope="col" class="px-4 py-2 hidden md:flex">
                                     Startdate
                                 </th>
-                                <th scope="col" class="px-4 py-2">
+                                <th scope="col" class="px-4 py-2 hidden md:flex">
                                     Duedate
                                 </th>
                             </tr>
@@ -180,13 +189,68 @@ export const PlannerGrid = (props: {type: string}) => {
                 <DragDropSensors />
                 <div class="column self-stretch">
                     <SortableProvider ids={IDS()}>
-                    <For each={AllTasks()}>{(task) => <Sortable allgroup={allGroup()} item={task} entities={entities} setEntities={setEntities} progressChoice={progressChoice()} priorityChoice={priorityChoice()} type={props.type} />}</For>
+                        <For each={AllTasks()}>
+                            {(task) => 
+                                <>
+                                    {task.progress != "Completed" &&
+                                        <Sortable allgroup={allGroup()} item={task} entities={entities} setEntities={setEntities} progressChoice={progressChoice()} priorityChoice={priorityChoice()} type={props.type} />
+                                    }
+                                </>
+                            }
+                        </For>
                     </SortableProvider>
                 </div>
                 <DragOverlay>
                     <div class="sortable"></div>
                 </DragOverlay>
                 </DragDropProvider>
+                <button
+                    class="flex items-center font-bold justify-between px-4 py-2 text-sm text-gray-700 bg-gray-200 uppercase rounded-sm focus:outline-none focus:bg-gray-300 m-auto w-full"
+                    onClick={toggleDropdown}
+                >
+                    Completed - 
+                    {completed_count()}
+                    <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    class={`ml-2 w-4 h-4 transition-transform duration-300 ${
+                        isOpen() ? "transform rotate-180" : ""
+                    }`}
+                    >
+                    <path
+                        fill-rule="evenodd"
+                        d="M5.293 6.293a1 1 0 0 1 1.414 0L10 9.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 0-1.414z"
+                        clip-rule="evenodd"
+                    />
+                    </svg>
+                </button>
+                {isOpen() && (
+                    <div class="w-full">
+                        <DragDropProvider
+                        onDragEnd={onDragEnd}
+                        collisionDetector={closestCenter}
+                        >
+                            <DragDropSensors />
+                            <div class="column self-stretch">
+                                <SortableProvider ids={IDS()}>
+                                    <For each={AllTasks()}>
+                                        {(task) => (
+                                            <>
+                                                {task.progress == "Completed" &&
+                                                    <Sortable allgroup={allGroup()} item={task} entities={entities} setEntities={setEntities} progressChoice={progressChoice()} priorityChoice={priorityChoice()} type={props.type} />
+                                                }
+                                            </>
+                                        )}
+                                    </For>
+                                </SortableProvider>
+                            </div>
+                            <DragOverlay>
+                                <div class="sortable"></div>
+                            </DragOverlay>
+                        </DragDropProvider>
+                    </div>
+                )}
             </>
             }
         </>

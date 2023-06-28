@@ -141,9 +141,11 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
 
   createEffect(async () => {
     // Previews
-    let load = await LoadPreviewFromString(Cookies.get("auth")!, itemstore.externallinks.toString());
-    if (load != null) {
-      setLinks(load);
+    if (itemstore.externallinks) {
+      let load = await LoadPreviewFromString(Cookies.get("auth")!, itemstore.externallinks.toString());
+      if (load != null) {
+        setLinks(load);
+      }
     }
     // Files
     let filesarr = await GetFilesFromString(Cookies.get("auth")!, itemstore.externalfiles)
@@ -155,7 +157,6 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
     
   })
 
-  console.log(props.entities)
   return (
       <>
         <label for={itemstore.id.toString()} class="modal cursor-pointer z-50">
