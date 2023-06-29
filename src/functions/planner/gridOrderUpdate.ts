@@ -37,7 +37,8 @@ export const gridOrderUpdate = server$(async (token:string|undefined, id1: numbe
 
       const execidswap = await conn.execute(queryString, [id1, id2, id2, id1, id1, id2, id1, id2]);
 
-      console.log(execidswap);
+      // console.log(execidswap);
+      // console.log(id1, id2);
     }
 })
 

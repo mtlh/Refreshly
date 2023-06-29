@@ -40,7 +40,7 @@ export default function Planner() {
           <PlannerBoard type="board" />
       }
       { format() == "grid" &&
-          <PlannerGrid />
+          <PlannerGrid type="grid" />
       }
       {/* { format() == "timeline" &&
           <PlannerTimeline />

@@ -200,7 +200,7 @@ export const PlannerBoard = (props: { type: string; }) => {
             </svg>
           </button>
           {isOpen() && (
-            <div class="absolute z-40 w-full mt-2 rounded-lg overflow-y-auto" style={{"max-height":"60vh"}}>
+            <div class="absolute z-40 w-full bg-white mt-2 rounded-lg overflow-y-auto" style={{"max-height":"60vh"}}>
               <div class="column cursor-move">
                 <SortableProvider ids={sortedItemIds()}>
                   <For each={props.items}>

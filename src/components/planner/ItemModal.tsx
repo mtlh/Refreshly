@@ -3,13 +3,13 @@ import { and, eq } from "drizzle-orm";
 import Cookies from "js-cookie";
 import moment from "moment";
 import { createSignal, createEffect, For } from "solid-js";
-import { createStore } from "solid-js/store";
+import { createStore, produce } from "solid-js/store";
 import server$ from "solid-start/server";
 import { planner } from "~/db/schema";
 import { db } from "~/functions/db_client";
 import { getAuth } from "~/functions/getAuth";
 import { saveEntities } from "~/functions/planner/saveEntities";
-import { SaveFiles, convertToBlob, LoadFiles, parseFile, GetFilesFromEntitiesString, GetFilesFromString } from "~/functions/uploads/FileUpload";
+import { SaveFiles, convertToBlob, LoadFiles, parseFile, GetFilesFromString } from "~/functions/uploads/FileUpload";
 import { GetPreview, SavePreview, LoadPreview, LoadPreviewFromString } from "~/functions/uploads/LinkPreview";
 import { Entity, checklist } from "~/types_const/planner";
 import { Item } from "~/types_const/planner";
@@ -322,28 +322,28 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
               </form>
             </div>
             
-            <button onclick={() => deletetask(itemstore.id, props.entities, props.type)} class="py-1 my-2 w-full bg-red-500 text-white rounded-lg hover:bg-red-700">DELETE TASK</button>
+            <button onclick={() => deletetask(itemstore.id, props.setEntities, props.entities, props.type)} class="py-1 my-2 w-full bg-red-500 text-white rounded-lg hover:bg-red-700">DELETE TASK</button>
           </label>
         </label>
       </>
     );
   };
 
-export const deletetask = async (itemid: number, entities: any, type: string) => {
+export const deletetask = async (itemid: number, setEntities: any, entities: any, type: string) => {
     const DeleteFromPlanner = server$(async (removeid: number, entities: Entity[], token:string|undefined) => {
         const auth_checked = await getAuth(token);
         let newarr = [];
         if (auth_checked.loggedin == true) {
         for (var x in entities) {
             if (entities[x].id == removeid) {
-            await db.delete(planner).where(and(eq(planner.id, entities[x].id), eq(planner.username, auth_checked.user.username)));
+              await db.delete(planner).where(and(eq(planner.id, entities[x].id), eq(planner.username, auth_checked.user.username)));
             } else {
-            newarr.push(entities[x]);
+              newarr.push(entities[x]);
             }
         }
         }
         return newarr;
     })
     const newarr = await DeleteFromPlanner(itemid, entities, Cookies.get("auth"));
-    location.href = "/planner?" + type + "=true"; 
+    setEntities(produce((prevStore: any[]) => {delete prevStore[itemid];}));
 }

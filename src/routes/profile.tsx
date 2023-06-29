@@ -60,7 +60,7 @@ export default function SettingsPage() {
       reader.readAsDataURL(file);
     }
   };
-
+  
   return (
       <>
         {isauth.loggedin == true &&
@@ -95,6 +95,9 @@ export default function SettingsPage() {
                 accept=".svg, .png, .jpg, .jpeg, .gif" />
               <p class="mt-1 text-sm text-gray-500 dark:text-gray-300" id="file_input_help">SVG, PNG, JPG or GIF (MAX. 800x400px).</p>
               {file() && !validateFile(file()) && <p class="text-red-700">Please select a valid file (SVG, PNG, JPG, GIF) within the specified size limit.</p>}
+            </div>
+            <div class="my-10">
+
             </div>
          </>
        }
