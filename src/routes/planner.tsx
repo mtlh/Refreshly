@@ -20,9 +20,9 @@ export default function Planner() {
   else if ( searchParams.board) {
     SetFormat("board")
   } 
-  // else if ( searchParams.timeline) {
-  //   SetFormat("timeline")
-  // } 
+  else if ( searchParams.schedule) {
+    SetFormat("schedule")
+  } 
   else if ( searchParams.stats) {
     SetFormat("stats")
   }
@@ -32,7 +32,7 @@ export default function Planner() {
       <div class="flex flex-row text-left m-2 p-2 gap-4 md:gap-10 underline underline-color text-lg md:text-xl font-normal">
         <button onclick={()=> {SetFormat("board"); nav("/planner?board=true")}}>Board</button>
         <button onclick={()=> {SetFormat("grid"); nav("/planner?grid=true")}}>Grid</button>
-        {/* <button onclick={()=> {SetFormat("timeline"); nav("/planner?timeline=true")}}>Timeline</button> */}
+        <button onclick={()=> {SetFormat("schedule"); nav("/planner?schedule=true")}}>Schedule</button>
         <button onclick={()=> {SetFormat("stats"); nav("/planner?stats=true")}}>Stats</button>
         <button onclick={()=> {SetFormat("options"); nav("/planner?options=true")}}>Options</button>
       </div>
@@ -42,9 +42,9 @@ export default function Planner() {
       { format() == "grid" &&
           <PlannerGrid type="grid" />
       }
-      {/* { format() == "timeline" &&
+      { format() == "schedule" &&
           <PlannerTimeline />
-      } */}
+      }
       { format() == "stats" &&
           <PlannerStats />
       }
