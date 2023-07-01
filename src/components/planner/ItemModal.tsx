@@ -9,16 +9,12 @@ import { planner } from "~/db/schema";
 import { db } from "~/functions/db_client";
 import { getAuth } from "~/functions/getAuth";
 import { saveEntities } from "~/functions/planner/saveEntities";
-import { SaveFiles, convertToBlob, LoadFiles, parseFile, GetFilesFromString } from "~/functions/uploads/FileUpload";
-import { GetPreview, SavePreview, LoadPreview, LoadPreviewFromString } from "~/functions/uploads/LinkPreview";
+import { SaveFiles, convertToBlob, parseFile, GetFilesFromString } from "~/functions/uploads/FileUpload";
+import { GetPreview, SavePreview, LoadPreviewFromString } from "~/functions/uploads/LinkPreview";
 import { Entity, checklist } from "~/types_const/planner";
 import { Item } from "~/types_const/planner";
 
 export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEntities: any, progressChoice: {name:string, colour:string}[], priorityChoice: {name:string, colour:string}[], type:string}) => {
-    const sortable = createSortable(props.item.id, {
-      type: "item",
-      group: props.item.group,
-    });
     const [itemstore, setItemStore] = createStore(props.item);
     const createIdsArray = (items: checklist[]): number[] => {
       return items.map((item, index) => index);
@@ -54,48 +50,44 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
   };
   const Sortable = (props: any) => {
     const sortable = createSortable(props.item);
+    // @ts-ignore
     const [state] = useDragDropContext();
     return (
-      <div class="grid grid-cols-12 sortable mr-2" use:sortable classList={{"opacity-80": sortable.isActiveDraggable, "transition-transform": !!state.active.draggable}}>
-        <div class="col-span-1 m-auto">
-          {itemstore.checklist[props.item].checked ?
-            <button onclick={() => {setItemStore("checklist", props.item, {checked: !itemstore.checklist[props.item].checked, content: itemstore.checklist[props.item].content}); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities)}}>
-              <svg fill="#000000" version="1.1" class="m-auto w-5" id="Capa_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 490 490"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <polygon points="452.253,28.326 197.831,394.674 29.044,256.875 0,292.469 207.253,461.674 490,54.528 "></polygon> </g></svg>
-            </button>
-            :
-            <button onclick={() => {setItemStore("checklist", props.item, {checked: !itemstore.checklist[props.item].checked, content: itemstore.checklist[props.item].content}); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities)}}>
-              <svg fill="#000000" class="m-auto w-5" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M0 14.545L1.455 16 8 9.455 14.545 16 16 14.545 9.455 8 16 1.455 14.545 0 8 6.545 1.455 0 0 1.455 6.545 8z" fill-rule="evenodd"></path> </g></svg>
-            </button>
-          }
-        </div>
-        <input
-          class="input my-1 w-full text-sm col-span-10 m-auto"
-          value={itemstore.checklist[props.item].content}
-          onchange={(e)=> {setItemStore("checklist", props.item, {checked: itemstore.checklist[props.item].checked, content: e.target.value}); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities) }}
-        />
-        <div class="col-span-1 m-auto rounded-lg">
-            <button onclick={() => {
-              let removedarr = [];
-              for (var x in itemstore.checklist) {
-                if ((itemstore.checklist[x].content != itemstore.checklist[props.item].content) || (itemstore.checklist[x].checked != itemstore.checklist[props.item].checked)) {
-                  removedarr.push(itemstore.checklist[x]);
+      <>
+        {/* @ts-ignore */}
+        <div class="grid grid-cols-12 sortable mr-2" use:sortable classList={{"opacity-80": sortable.isActiveDraggable, "transition-transform": !!state.active.draggable}}>
+          <div class="col-span-1 m-auto">
+            {itemstore.checklist[props.item].checked ?
+              <button onclick={() => {setItemStore("checklist", props.item, {checked: !itemstore.checklist[props.item].checked, content: itemstore.checklist[props.item].content}); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities)}}>
+                <svg fill="#000000" version="1.1" class="m-auto w-5" id="Capa_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 490 490"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <polygon points="452.253,28.326 197.831,394.674 29.044,256.875 0,292.469 207.253,461.674 490,54.528 "></polygon> </g></svg>
+              </button>
+              :
+              <button onclick={() => {setItemStore("checklist", props.item, {checked: !itemstore.checklist[props.item].checked, content: itemstore.checklist[props.item].content}); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities)}}>
+                <svg fill="#000000" class="m-auto w-5" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M0 14.545L1.455 16 8 9.455 14.545 16 16 14.545 9.455 8 16 1.455 14.545 0 8 6.545 1.455 0 0 1.455 6.545 8z" fill-rule="evenodd"></path> </g></svg>
+              </button>
+            }
+          </div>
+          <input
+            class="input my-1 w-full text-sm col-span-10 m-auto"
+            value={itemstore.checklist[props.item].content}
+            onchange={(e)=> {setItemStore("checklist", props.item, {checked: itemstore.checklist[props.item].checked, content: e.target.value}); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities) }}
+          />
+          <div class="col-span-1 m-auto rounded-lg">
+              <button onclick={() => {
+                let removedarr = [];
+                for (var x in itemstore.checklist) {
+                  if ((itemstore.checklist[x].content != itemstore.checklist[props.item].content) || (itemstore.checklist[x].checked != itemstore.checklist[props.item].checked)) {
+                    removedarr.push(itemstore.checklist[x]);
+                  }
                 }
-              }
-              setItems(createIdsArray(removedarr)); setItemStore("checklist", removedarr); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities);}}>
-              <svg viewBox="0 0 24 24" class="m-auto w-5" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.73708 6.54391V18.9857C5.73708 19.7449 6.35257 20.3604 7.11182 20.3604H16.8893C17.6485 20.3604 18.264 19.7449 18.264 18.9857V6.54391M2.90906 6.54391H21.0909" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> <path d="M8 6V4.41421C8 3.63317 8.63317 3 9.41421 3H14.5858C15.3668 3 16 3.63317 16 4.41421V6" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> </g></svg>
-            </button>
+                setItems(createIdsArray(removedarr)); setItemStore("checklist", removedarr); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities);}}>
+                <svg viewBox="0 0 24 24" class="m-auto w-5" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.73708 6.54391V18.9857C5.73708 19.7449 6.35257 20.3604 7.11182 20.3604H16.8893C17.6485 20.3604 18.264 19.7449 18.264 18.9857V6.54391M2.90906 6.54391H21.0909" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> <path d="M8 6V4.41421C8 3.63317 8.63317 3 9.41421 3H14.5858C15.3668 3 16 3.63317 16 4.41421V6" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> </g></svg>
+              </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   };
-  const [isdueclass, setIsDueClass] = createSignal(" bg-transparent ");
-  createEffect(() => {
-    if (moment(itemstore.duedate).isBefore(moment(new Date())) == true) {
-      setIsDueClass(" text-white bg-red-500 ")
-    } else { 
-      setIsDueClass(" bg-transparent ")
-    }
-  }, [itemstore.duedate]);
 
   const [files, setFiles] = createSignal<File[]>([]);
 
@@ -157,6 +149,21 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
     
   })
 
+  const [date_err, Setdate_err] = createSignal("");
+
+  function checkdates(startdate: string, duedate: string) {
+    if (moment(duedate).isAfter(startdate) == false && moment(duedate).isSame(startdate) == false) {
+      Setdate_err("Please ensure startdue is before duedate")
+    } else {
+      setItemStore("startdate", startdate); 
+      setItemStore("duedate", duedate); 
+      setItemStore("lastupdate", new Date()); 
+      props.setEntities(itemstore.id, itemstore); 
+      saveEntities(props.entities);
+    }
+  }
+  checkdates(itemstore.startdate!, itemstore.duedate!);
+
   return (
       <>
         <label for={itemstore.id.toString()} class="modal cursor-pointer z-50">
@@ -168,14 +175,15 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
                 <label class="label">
                   <span class="label-text">Startdate:</span>
                 </label>
-                <input type="date" class="input" value={itemstore.startdate} onChange={(e) => {setItemStore("startdate", e.target.value); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities)}} />
+                <input type="date" class="input" value={itemstore.startdate} onChange={(e) => {checkdates(e.target.value, itemstore.duedate!)}} />
               </div>
               <div class="form-control w-full my-1 m-auto">
                 <label class="label">
                   <span class="label-text">Duedate:</span>
                 </label>
-                <input type="date" class="input" value={itemstore.duedate} onChange={(e) => {setItemStore("duedate", e.target.value); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities)}} />
+                <input type="date" class="input" value={itemstore.duedate} onChange={(e) => {checkdates(itemstore.startdate!, e.target.value)}} />
               </div>
+              <p class="text-red-500 text-md w-full col-span-2">{date_err()}</p>
               <div class="form-control w-full my-1 m-auto">
                 <label class="label">
                   <span class="label-text">Progress:</span>
@@ -280,7 +288,7 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
                 <span class="label-text">External Links:</span>
               </label>
               <div class="grid grid-cols-2 gap-4 my-1">
-                {links().map((link, index) => (
+                {links().map((link: {title: string, description: string, images: any[], url:string}, index) => (
                   <div class="h-52 max-w-lg flex gap-4 relative bg-gray-200 border border-gray-300 rounded-lg shadow-lg">
                     <button onClick={() => handleRemoveLink(index)} class="absolute top-0 right-0 h-10 w-10 bg-white">
                       <svg
