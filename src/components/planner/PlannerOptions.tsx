@@ -1,6 +1,5 @@
 import { eq } from "drizzle-orm";
 import Cookies from "js-cookie";
-import { customise } from "~/db/schema";
 import { db } from "~/functions/db_client";
 import { getAuth } from "~/functions/getAuth";
 import server$ from "solid-start/server";
@@ -14,11 +13,12 @@ import { getEntities } from "~/functions/planner/getEntities";
 import { addGroup } from "~/functions/planner/addItemGroup";
 import { UpdateProgressChoice, getProgressChoice } from "~/functions/planner/progressChoice";
 import { UpdatePriorityChoice, getPriorityChoice } from "~/functions/planner/priorityChoice";
+import { planner } from "~/db/schema";
 
 export const ORDER_DELTA = 1;
 export const ID_DELTA = 1;
 
-export const PlannerOptions = () => {
+export const PlannerOptions = (props: {id: number}) => {
     let nextOrder = 1;
     let nextID = 1;
 
@@ -34,11 +34,11 @@ export const PlannerOptions = () => {
 
     const setup = () => {
     batch(async () => {
-        let ent = await getEntities(nextID, nextOrder, entities, setEntities); nextID = ent.nextID; nextOrder = ent.nextOrder;
+        let ent = await getEntities(nextID, nextOrder, entities, setEntities, props.id); nextID = ent.nextID; nextOrder = ent.nextOrder;
         // SetBoardCol(await getBoardCol());
-        let progressChoice: string[] = await getProgressChoice();
+        let progressChoice: string[] = await getProgressChoice(props.id);
         setProgressChoice(progressChoice);
-        let priorityChoice: string[] = await getPriorityChoice();
+        let priorityChoice: string[] = await getPriorityChoice(props.id);
         setPriorityChoice(priorityChoice);
     });
     };
@@ -61,7 +61,7 @@ export const PlannerOptions = () => {
                         <>
                           <div class="grid grid-cols-12 gap-2">
                             <input value={group.name} class="input my-1 col-span-11 rounded-lg"
-                            onchange={(e)=> {setEntities(group.id, "name", e.target.value); saveEntities(entities);}} />
+                            onchange={(e)=> {setEntities(group.id, "name", e.target.value); saveEntities(entities, props.id);}} />
                             <button class="w-full rounded-lg my-1 col-span-1" onclick={async () => {
                               let removeid: number = 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999;
                               for (var x in entities) {
@@ -70,7 +70,7 @@ export const PlannerOptions = () => {
                                 }
                               }
                               await removeGroup(removeid, Cookies.get("auth")!);
-                              location.href = "/planner?options=true";
+                              location.reload();
                             }}>
                               <svg viewBox="0 0 24 24" class="m-auto w-6" fill="black" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.73708 6.54391V18.9857C5.73708 19.7449 6.35257 20.3604 7.11182 20.3604H16.8893C17.6485 20.3604 18.264 19.7449 18.264 18.9857V6.54391M2.90906 6.54391H21.0909" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> <path d="M8 6V4.41421C8 3.63317 8.63317 3 9.41421 3H14.5858C15.3668 3 16 3.63317 16 4.41421V6" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> </g></svg>
                             </button>
@@ -84,7 +84,7 @@ export const PlannerOptions = () => {
                         let newid = nextID += 1;
                         let ordernum = nextOrder += 1;
                         addGroup(newid, "New Group", ordernum.toString(), setEntities);
-                        saveEntities(entities);
+                        saveEntities(entities, props.id);
                     }}>
                       +
                     </button>
@@ -97,14 +97,14 @@ export const PlannerOptions = () => {
                         <>
                           <div class="grid grid-cols-12 gap-2">
                             <input value={progress.name} class="input my-1 col-span-9 rounded-lg"
-                            onchange={(e)=> {let current = progressChoice(); current[id()].name = e.target.value; setProgressChoice(current); UpdateProgressChoice(progressChoice())}} />
+                            onchange={(e)=> {let current = progressChoice(); current[id()].name = e.target.value; setProgressChoice(current); UpdateProgressChoice(progressChoice(), props.id)}} />
                             <input type="color" class="rounded-full col-span-2 w-full h-8 m-auto" value={progress.colour}
-                            onchange={(e)=> {let current = progressChoice(); current[id()].colour = e.target.value; setProgressChoice(current); UpdateProgressChoice(progressChoice())}} />
+                            onchange={(e)=> {let current = progressChoice(); current[id()].colour = e.target.value; setProgressChoice(current); UpdateProgressChoice(progressChoice(), props.id)}} />
                             <button class="w-full rounded-lg my-1 col-span-1" onclick={async () => {
                               if (progressChoice().length > 1) {
-                                setProgressChoice([...progressChoice().slice(0, id()), ...progressChoice().slice(id() + 1)]); UpdateProgressChoice(progressChoice())
+                                setProgressChoice([...progressChoice().slice(0, id()), ...progressChoice().slice(id() + 1)]); UpdateProgressChoice(progressChoice(), props.id)
                               } else {
-                                setProgressChoice([]); UpdateProgressChoice(progressChoice());
+                                setProgressChoice([]); UpdateProgressChoice(progressChoice(), props.id);
                               }
                             }}>
                               <svg viewBox="0 0 24 24" class="m-auto w-6" fill="black" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.73708 6.54391V18.9857C5.73708 19.7449 6.35257 20.3604 7.11182 20.3604H16.8893C17.6485 20.3604 18.264 19.7449 18.264 18.9857V6.54391M2.90906 6.54391H21.0909" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> <path d="M8 6V4.41421C8 3.63317 8.63317 3 9.41421 3H14.5858C15.3668 3 16 3.63317 16 4.41421V6" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> </g></svg>
@@ -116,7 +116,7 @@ export const PlannerOptions = () => {
                     <button
                       class="text-3xl my-4 font-bold w-full rounded-lg hover:bg-sky-700 bg-sky-800 text-white py-0.5"
                       onClick={()=> {
-                        setProgressChoice((prevChoices) => [...prevChoices, ...[{name: "Progress", colour: "#e66465"}]]); UpdateProgressChoice(progressChoice())
+                        setProgressChoice((prevChoices) => [...prevChoices, ...[{name: "Progress", colour: "#e66465"}]]); UpdateProgressChoice(progressChoice(), props.id)
                     }}>
                       +
                     </button>
@@ -128,14 +128,14 @@ export const PlannerOptions = () => {
                         <>
                           <div class="grid grid-cols-12 gap-2">
                             <input value={progress.name} class="input my-1 col-span-9 rounded-lg"
-                            onchange={(e)=> {let current = priorityChoice(); current[id()].name = e.target.value; setPriorityChoice(current); UpdatePriorityChoice(priorityChoice())}} />
+                            onchange={(e)=> {let current = priorityChoice(); current[id()].name = e.target.value; setPriorityChoice(current); UpdatePriorityChoice(priorityChoice(), props.id)}} />
                             <input type="color" class="rounded-full col-span-2 w-full h-8 m-auto" value={progress.colour}
-                            onchange={(e)=> {let current = priorityChoice(); current[id()].colour = e.target.value; setPriorityChoice(current); UpdatePriorityChoice(priorityChoice())}} />
+                            onchange={(e)=> {let current = priorityChoice(); current[id()].colour = e.target.value; setPriorityChoice(current); UpdatePriorityChoice(priorityChoice(), props.id)}} />
                             <button class="w-full rounded-lg my-1 col-span-1" onclick={async () => {
                               if (priorityChoice().length > 1) {
-                                setPriorityChoice([...priorityChoice().slice(0, id()), ...priorityChoice().slice(id() + 1)]); UpdatePriorityChoice(priorityChoice())
+                                setPriorityChoice([...priorityChoice().slice(0, id()), ...priorityChoice().slice(id() + 1)]); UpdatePriorityChoice(priorityChoice(), props.id)
                               } else {
-                                setPriorityChoice([]); UpdatePriorityChoice(priorityChoice());
+                                setPriorityChoice([]); UpdatePriorityChoice(priorityChoice(), props.id);
                               }
                             }}>
                               <svg viewBox="0 0 24 24" class="m-auto w-6" fill="black" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.73708 6.54391V18.9857C5.73708 19.7449 6.35257 20.3604 7.11182 20.3604H16.8893C17.6485 20.3604 18.264 19.7449 18.264 18.9857V6.54391M2.90906 6.54391H21.0909" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> <path d="M8 6V4.41421C8 3.63317 8.63317 3 9.41421 3H14.5858C15.3668 3 16 3.63317 16 4.41421V6" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> </g></svg>
@@ -147,7 +147,7 @@ export const PlannerOptions = () => {
                     <button
                       class="text-3xl my-4 font-bold w-full rounded-lg hover:bg-sky-700 bg-sky-800 text-white py-0.5"
                       onClick={()=> {
-                        setPriorityChoice((prevChoices) => [...prevChoices, ...[{name: "Priority", colour: "#e66465"}]]); UpdatePriorityChoice(priorityChoice())
+                        setPriorityChoice((prevChoices) => [...prevChoices, ...[{name: "Priority", colour: "#e66465"}]]); UpdatePriorityChoice(priorityChoice(), props.id)
                     }}>
                       +
                     </button>
@@ -176,28 +176,28 @@ export const PlannerOptions = () => {
 };
 
 
-export const getBoardCol = async () => {
-  const getBoardCol = server$(async (token:string|undefined) => {
+export const getBoardCol = async (plannerid: number) => {
+  const getBoardCol = server$(async (token:string|undefined, plannerid: number) => {
       const auth_checked = await getAuth(token);
       if (auth_checked.loggedin == true) {
-      const userplanner = await db.select().from(customise).where(eq(customise.username, auth_checked.user.username));
+        const userplanner = await db.select().from(planner).where(eq(planner.id, plannerid));
       return userplanner;
       } else {
-      return [];
+        return [];
       }
   })
-  const boardcolnum = await getBoardCol(Cookies.get("auth"));
+  const boardcolnum = await getBoardCol(Cookies.get("auth"), plannerid);
   let boardcol: number = 4;
   boardcolnum.map(settings => boardcol = settings.boardcol);
   return boardcol;
 };
 
-export const UpdateBoardCol = async (newnum: number) => {
-  const UpdateBoardCol = server$(async (token:string|undefined, newnum: number) => {
+export const UpdateBoardCol = async (newnum: number, plannerid: number) => {
+  const UpdateBoardCol = server$(async (token:string|undefined, newnum: number, plannerid: number) => {
       const auth_checked = await getAuth(token);
       if (auth_checked.loggedin == true) {
-        const updateboardcol = await db.update(customise).set({boardcol: newnum}).where(eq(customise.username, auth_checked.user.username));
+        const updateboardcol = await db.update(planner).set({boardcol: newnum}).where(eq(planner.id, plannerid));
       }
   })
-  const boardcolnum = await UpdateBoardCol(Cookies.get("auth"), newnum);
+  const boardcolnum = await UpdateBoardCol(Cookies.get("auth"), newnum, plannerid);
 };

@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
 import server$ from "solid-start/server";
-import { auth, customise } from "~/db/schema";
+import { auth } from "~/db/schema";
 import { db } from "~/functions/db_client";
 import { eq } from "drizzle-orm";
 import { encrypt } from "~/functions/encrypt";
@@ -33,7 +33,6 @@ const Signup = () => {
                             const insertuser = await db.insert(auth).values({username: username, 
                                  displayname: username, email: email, pass: encrypt_pass,
                                  validemail: false, token: token, imgurl: "https://eu.ui-avatars.com/api/?name=" + username});
-                            const insertcustom = await db.insert(customise).values({username: username}) 
                             return {error: "/dashboard", token: token};
                         } else {
                             return {error: "Username must be unique.", token: null};

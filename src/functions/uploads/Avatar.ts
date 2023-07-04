@@ -10,7 +10,7 @@ export const UploadAvatar = server$(async (blob: Blob, token: string) => {
     const auth_checked = await getAuth(token);
     if (auth_checked.loggedin == true) {
 
-        const updatefileblob: string = 'UPDATE customise SET imgtest = ? WHERE username = ?';
+        const updatefileblob: string = 'UPDATE auth SET imgtest = ? WHERE username = ?';
         const fileupdate = await conn.execute(updatefileblob, [blob, auth_checked.user.username]);
 
         return true;
@@ -23,7 +23,7 @@ export const GetAvatar = server$(async (token: string) => {
     const auth_checked = await getAuth(token);
     if (auth_checked.loggedin == true) {
 
-        const selectimgtest: string = 'SELECT imgtest FROM customise WHERE username = ?';
+        const selectimgtest: string = 'SELECT imgtest FROM auth WHERE username = ?';
         const fileselect = await conn.execute(selectimgtest, [auth_checked.user.username]);
         // @ts-ignore
         return fileselect.rows[0].imgtest;

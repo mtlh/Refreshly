@@ -52,7 +52,7 @@ const GroupOverlay: VoidComponent<{ name: string; items: Item[] }> = (
   );
 };
 
-export const PlannerBoard = (props: { type: string; }) => {
+export const PlannerBoard = (props: { type: string, id: number }) => {
   const [entities, setEntities] = createStore<Record<Id, Entity>>({});
 
   let nextOrder = 1;
@@ -120,7 +120,7 @@ export const PlannerBoard = (props: { type: string; }) => {
               {itemstore.checklist &&
                 <p class="absolute bottom-0 right-0 text-right py-0.5 px-2.5 italic text-sm">{checkedcount()}/{itemstore.checklist.length}</p>
               }
-              <input type="date" class={"py-0.5 px-2.5 absolute italic bottom-0 left-0 text-sm border-0 rounded-lg w-[7.5rem] focus:ring-sky-800 focus:ring-2" + isdueclass()} value={itemstore.duedate} onChange={(e) => {setItemStore("duedate", e.target.value); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities(entities)}} />
+              <input type="date" class={"py-0.5 px-2.5 absolute italic bottom-0 left-0 text-sm border-0 rounded-lg w-[7.5rem] focus:ring-sky-800 focus:ring-2" + isdueclass()} value={itemstore.duedate} onChange={(e) => {setItemStore("duedate", e.target.value); setItemStore("lastupdate", new Date()); setEntities(itemstore.id, itemstore); saveEntities(entities, props.id)}} />
             </div>
           </div>
         </label>
@@ -130,7 +130,7 @@ export const PlannerBoard = (props: { type: string; }) => {
     );
   };
 
-  const Group: VoidComponent<{ id: Id; name: string; items: Item[]}> = (
+  const Group: VoidComponent<{ id: Id; name: string; items: Item[], plannerid: number}> = (
     props
   ) => {
     const sortable = createSortable(props.id, { type: "group" });
@@ -158,7 +158,7 @@ export const PlannerBoard = (props: { type: string; }) => {
               {(item) => (
                 <>
                   { item.progress != "Completed" &&
-                    <Item {...item} />
+                    <Item {...item} plannerid={props.plannerid} />
                   }
                 </>
               )}
@@ -176,7 +176,7 @@ export const PlannerBoard = (props: { type: string; }) => {
           lastupdate: new Date(),
           id: nextID+=1,
           order: (nextOrder+=1).toString()
-        }, setEntities); saveEntities(entities)}} class="bg-grey-100 text-2xl rounded-sm w-[95%] text-black p-1 hover:ring-2 m-auto">+</button>
+        }, setEntities); saveEntities(entities, props.plannerid)}} class="bg-grey-100 text-2xl rounded-sm w-[95%] text-black p-1 hover:ring-2 m-auto">+</button>
         <div class="relative mt-2">
           <button
             class="flex items-center justify-between px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-sm w-[95%] focus:outline-none focus:bg-gray-300 m-auto"
@@ -207,7 +207,7 @@ export const PlannerBoard = (props: { type: string; }) => {
                     {(item) => (
                       <>
                         { item.progress == "Completed" &&
-                          <Item {...item} />
+                          <Item {...item} plannerid={props.plannerid} />
                         }
                       </>
                     )}
@@ -240,17 +240,17 @@ export const PlannerBoard = (props: { type: string; }) => {
 
   const setup = () => {
     batch(async () => {
-      let ent = await getEntities(nextID, nextOrder, entities, setEntities); nextID = ent.nextID; nextOrder = ent.nextOrder;
+      let ent = await getEntities(nextID, nextOrder, entities, setEntities, props.id); nextID = ent.nextID; nextOrder = ent.nextOrder;
 
-      SetGroupFilter(await getGroupShowFilter());
+      SetGroupFilter(await getGroupShowFilter(props.id));
 
-      SetBoardCol(await getBoardCol());
+      SetBoardCol(await getBoardCol(props.id));
 
       // Progress/Priority Options
-      let priority: string[] = await getPriorityChoice();
+      let priority: string[] = await getPriorityChoice(props.id);
       // @ts-ignore
       setPriorityChoice(priority);
-      let progress: string[] = await getProgressChoice();
+      let progress: string[] = await getProgressChoice(props.id);
       // @ts-ignore
       setProgressChoice(progress);
     });
@@ -384,7 +384,7 @@ export const PlannerBoard = (props: { type: string; }) => {
         order: order?.toString(),
         group: droppableGroupId,
       }));
-      saveEntities(entities);
+      saveEntities(entities, props.id);
     }
   };
 
@@ -396,7 +396,7 @@ export const PlannerBoard = (props: { type: string; }) => {
   
   return (
     <>
-      {(boardcol() != 0 && JSON.stringify(groupfilter()[0]) != "" && priorityChoice() != 0 && progressChoice() != 0) ? 
+      {(boardcol() != 0 && JSON.stringify(groupfilter()[0]) != "") ? 
         <>    
           <div class="relative">
             <div class="absolute dropdown dropdown-bottom dropdown-end top-0 right-0 -translate-y-28 md:-translate-y-14 z-30">
@@ -412,7 +412,7 @@ export const PlannerBoard = (props: { type: string; }) => {
                         <>
                           <li>
                             <div class="flex items-center">
-                                <input checked={groupfilter()[v()]} onchange={() => { updateGroupFilterAtIndex(v(), !groupfilter()[v()]); UpdateGroupShowFilter(groupfilter()); } } id="checkbox-item-2" type="checkbox" value="" 
+                                <input checked={groupfilter()[v()]} onchange={() => { updateGroupFilterAtIndex(v(), !groupfilter()[v()]); UpdateGroupShowFilter(groupfilter(), props.id); } } id="checkbox-item-2" type="checkbox" value="" 
                                   class="w-6 h-6 text-sky-800 bg-gray-100 border-gray-300 rounded focus:ring-sky-700"
                                  />
                                 <label for="checkbox-item-2" class="ml-1 text-lg font-medium text-gray-900 dark:text-gray-300">{group.name}</label>
@@ -431,7 +431,7 @@ export const PlannerBoard = (props: { type: string; }) => {
           <div class={`grid gap-2 p-2 self-stretch grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5`}>
             <DragDropProvider
               onDragOver={onDragOver}
-              onDragEnd={(e)=> {onDragEnd(e); saveEntities(entities)}}
+              onDragEnd={(e)=> {onDragEnd(e); saveEntities(entities, props.id)}}
               collisionDetector={closestEntity}
             >
               <DragDropSensors />
@@ -442,8 +442,9 @@ export const PlannerBoard = (props: { type: string; }) => {
                         {groupfilter()[x()] == true &&
                           <Group
                             id={group.id}
-                          name={group.name}
-                          items={groupItems(group.id)}
+                            name={group.name}
+                            items={groupItems(group.id)}
+                            plannerid={props.id}
                           />
                         }
                       </>

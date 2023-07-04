@@ -11,6 +11,7 @@ export interface Base {
   name: string;
   type: "group" | "item";
   order: string;
+  plannerid: number;
 }
 
 export interface Group extends Base {

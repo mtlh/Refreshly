@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import Cookies from "js-cookie";
 import server$ from "solid-start/server";
-import { planner } from "~/db/schema";
+import { plannerdata } from "~/db/schema";
 import { db } from "../db_client";
 import { getAuth } from "../getAuth";
 import { saveEntities } from "./saveEntities";
@@ -10,22 +10,22 @@ import { addGroup, addItem } from "./addItemGroup";
 import { SetStoreFunction } from "solid-js/store";
 import { Id } from "@thisbeyond/solid-dnd";
 
-export const getEntities = async (nextID: number, nextOrder: number, entities: Record<Id, Entity>, setEntities: SetStoreFunction<Record<Id, Entity>>) => {
-    const getAllEntities = server$(async (token:string|undefined) => {
+export const getEntities = async (nextID: number, nextOrder: number, entities: Record<Id, Entity>, setEntities: SetStoreFunction<Record<Id, Entity>>, plannerid: number) => {
+    const getAllEntities = server$(async (token:string|undefined, plannerid: number) => {
         const auth_checked = await getAuth(token);
         if (auth_checked.loggedin == true) {
-            const userplanner = await db.select().from(planner).where(eq(planner.username, auth_checked.user.username));
+            const userplanner = await db.select().from(plannerdata).where(eq(plannerdata.plannerid, plannerid));
             return userplanner;
         } else {
             return [];
         }
     })
-    const planneritems = await getAllEntities(Cookies.get("auth"));
+    const planneritems = await getAllEntities(Cookies.get("auth"), plannerid);
     if (planneritems?.length == 0) {
         addGroup(nextID, "Upcoming", nextOrder.toString(), setEntities);
         addGroup(nextID+1, "Ongoing", nextOrder.toString(), setEntities);
         addGroup(nextID+2, "Completed", nextOrder.toString(), setEntities);
-        saveEntities(entities);
+        saveEntities(entities, plannerid);
     } else {
         for (let entity of planneritems) {
             if (entity.type == "item") {

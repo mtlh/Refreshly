@@ -1,5 +1,5 @@
 // @refresh reload
-import { Suspense, createEffect, createSignal } from "solid-js";
+import { For, Suspense, createEffect, createSignal } from "solid-js";
 import { useLocation, Body, ErrorBoundary, FileRoutes, Head, Html, Meta, Routes, Scripts, Title, useNavigate } from "solid-start";
 import "./root.css";
 import ToggleTeam from "./components/Toggle/ToggleTeam";
@@ -9,32 +9,33 @@ import Cookies from "js-cookie";
 import { createStore } from "solid-js/store";
 import { base_noauth } from "./functions/db_config";
 import { db } from "./functions/db_client";
-import { planner } from "./db/schema";
+import { planner, planner_roles } from "./db/schema";
 import server$ from "solid-start/server";
 import { and, eq } from "drizzle-orm";
 
 import 'flowbite';
 import { GetAvatar, parseAvatar } from "./functions/uploads/Avatar";
+import TogglePlanner from "./components/Toggle/TogglePlanner";
 
 export default function Root() {
   const [path, setPath] = createSignal(useLocation().pathname);
   const navigate = useNavigate();
 
-  const getPlannerCount = async () => {
-    const dbFetch = server$(async (token:string|undefined) => {
+  const getPlannerInfo = async () => {
+    const getPlannerInfo = server$(async (token:string|undefined) => {
       // @ts-ignore
       const auth_checked = await getAuth(token);
       if (auth_checked.loggedin == true) {
-        const userplanner = await db.select().from(planner).where(and(eq(planner.username, auth_checked.user.username), eq(planner.type, "item")));
-        return userplanner.length;
+        const UserPlanner = await db.select().from(planner_roles).leftJoin(planner, eq(planner.id, planner_roles.plannerid)).where(and(eq(planner_roles.username, auth_checked.user.username)));
+        return UserPlanner;
       } else {
-        return 0;
+        return [];
       }
     })
-    return await dbFetch(Cookies.get("auth"));
+    return await getPlannerInfo(Cookies.get("auth"));
   };
 
-  const [plannerCount, setPlannerCount] = createSignal(0);
+  const [plannerInfo, setPlannerInfo] = createSignal<any[]>([]);
   const [checkAuth, setCheckAuth] = createSignal(true)
   const [isauth, setAuth] = createStore(base_noauth);
   const [imageUrl, setImageUrl] = createSignal("");
@@ -46,13 +47,17 @@ export default function Root() {
   }
   createEffect(async () => {
     if (checkAuth() == true) {
+
       setAuth(await getAuth(Cookies.get("auth")));
       setCheckAuth(false);
+
       if (isauth.loggedin == false && path() != "/login" && path() != "/signup" && path() != "/" ) {
         navigate("/login");
       }
-      setPlannerCount(await getPlannerCount());
+
+      setPlannerInfo(await getPlannerInfo());
     }
+
     updateState();
     window.addEventListener('popstate', updateState);
 
@@ -61,6 +66,7 @@ export default function Root() {
       // @ts-ignore
       setImageUrl(dataUrl);
     }
+
   });
   
   return (
@@ -118,21 +124,7 @@ export default function Root() {
                             </li>
                           }
                           { isauth.custom.planner &&
-                            <li>
-                              {path() == "/planner" ?
-                                  <p class="flex items-center p-2 text-black rounded-2xl bg-white dark:text-white dark:hover:bg-gray-700">
-                                    <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-black transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                                    <span class="flex-1 ml-3 whitespace-nowrap">Planner</span>
-                                    <span class="inline-flex items-center justify-center px-2 ml-3 text-sm font-medium text-gray-800 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300">{plannerCount()}</span>
-                                  </p>
-                                  :
-                                  <a onclick={() => {setCheckAuth(true); navigate("/planner")}} class="cursor-pointer flex items-center p-2 text-white rounded-lg dark:text-white dark:hover:bg-gray-700">
-                                    <svg aria-hidden="true" class="flex-shrink-0 w-6 h-6 text-white transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                                    <span class="flex-1 ml-3 whitespace-nowrap">Planner</span>
-                                    <span class="inline-flex items-center justify-center px-2 ml-3 text-sm font-medium text-gray-800 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300">{plannerCount()}</span>
-                                  </a>
-                                }
-                            </li>
+                            <TogglePlanner path={path()} plannerInfo={plannerInfo()} setPlannerInfo={setPlannerInfo} />
                           }
                           { isauth.custom.inbox &&
                             <li>

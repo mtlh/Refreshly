@@ -100,7 +100,7 @@ const Sortable = (props: {allgroup: any[], type: string, entities: Record<Id, En
     );
   };
 
-export const PlannerGrid = (props: {type: string}) => {
+export const PlannerGrid = (props: {type: string, id: number}) => {
     let nextOrder = 1;
     let nextID = 1;
 
@@ -122,15 +122,15 @@ export const PlannerGrid = (props: {type: string}) => {
 
     const setup = () => {
     batch(async () => {
-        let ent = await getEntities(nextID, nextOrder, entities, setEntities); nextID = ent.nextID; nextOrder = ent.nextOrder;
-        let progressChoice: string[] = await getProgressChoice();
+        let ent = await getEntities(nextID, nextOrder, entities, setEntities, props.id); nextID = ent.nextID; nextOrder = ent.nextOrder;
+        let progressChoice: string[] = await getProgressChoice(props.id);
         // @ts-ignore
         setProgressChoice(progressChoice);
-        let priorityChoice: string[] = await getPriorityChoice();
+        let priorityChoice: string[] = await getPriorityChoice(props.id);
         // @ts-ignore
         setPriorityChoice(priorityChoice);
 
-        SetGroupFilter(await getGroupShowFilter());
+        SetGroupFilter(await getGroupShowFilter(props.id));
 
         setCompletedCount(AllTasks().filter(item => item.progress === 'Completed').length);
     });
@@ -161,14 +161,14 @@ export const PlannerGrid = (props: {type: string}) => {
                 const updatedTasks = currentTasks.slice();
                 updatedTasks.splice(toIndex, 0, ...updatedTasks.splice(fromIndex, 1));
                 setAllTasks(updatedTasks);
-                await gridOrderUpdate(Cookies.get("auth"), draggable.id, droppable.id, AllTasks())
+                await gridOrderUpdate(Cookies.get("auth"), draggable.id, droppable.id, AllTasks(), props.id)
             }
         }
     };
 
     return (
         <>
-            {priorityChoice() != 0 && progressChoice() != 0 && JSON.stringify(groupfilter()[0]) != "" &&
+            {JSON.stringify(groupfilter()[0]) != "" &&
             <>
                 <div class="relative">
                     <div class="absolute dropdown dropdown-bottom dropdown-end top-0 right-0 -translate-y-28 md:-translate-y-14 z-30">
@@ -184,7 +184,7 @@ export const PlannerGrid = (props: {type: string}) => {
                                 <>
                                 <li>
                                     <div class="flex items-center">
-                                        <input checked={groupfilter()[v()]} onchange={() => { updateGroupFilterAtIndex(v(), !groupfilter()[v()]); UpdateGroupShowFilter(groupfilter()); } } id="checkbox-item-2" type="checkbox" value="" 
+                                        <input checked={groupfilter()[v()]} onchange={() => { updateGroupFilterAtIndex(v(), !groupfilter()[v()]); UpdateGroupShowFilter(groupfilter(), props.id); } } id="checkbox-item-2" type="checkbox" value="" 
                                         class="w-6 h-6 text-sky-800 bg-gray-100 border-gray-300 rounded focus:ring-sky-700"
                                         />
                                         <label for="checkbox-item-2" class="ml-1 text-lg font-medium text-gray-900 dark:text-gray-300">{group.name}</label>
@@ -251,6 +251,7 @@ export const PlannerGrid = (props: {type: string}) => {
                     name: "new task",
                     type: "item",
                     group: 1,
+                    plannerid: props.id,
                     progress: "",
                     description: "",
                     checklist: [],
@@ -260,7 +261,7 @@ export const PlannerGrid = (props: {type: string}) => {
                     order: (nextOrder += 1).toString(),
                     externalfiles: [],
                     externallinks: []
-                }, setEntities); saveEntities(entities)}} class="bg-grey-100 text-2xl rounded-sm w-full text-black p-1 hover:ring-2 m-auto">
+                }, setEntities); saveEntities(entities, props.id)}} class="bg-grey-100 text-2xl rounded-sm w-full text-black p-1 hover:ring-2 m-auto">
                     +
                 </button>
                 <button

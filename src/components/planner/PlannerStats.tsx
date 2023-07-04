@@ -6,7 +6,7 @@ import { createStore } from 'solid-js/store'
 import { Entity } from '~/types_const/planner'
 import { Id } from '@thisbeyond/solid-dnd'
 
-export const PlannerStats = () => {
+export const PlannerStats = (props: {id: number}) => {
 
     let nextOrder = 1;
     let nextID = 1;
@@ -31,7 +31,7 @@ export const PlannerStats = () => {
     onMount(() => {
         Chart.register(Title, Tooltip, Legend, Colors, ArcElement, LinearScale, RadialLinearScale)
         batch(async () => {
-            let ent = await getEntities(nextID, nextOrder, entities, setEntities); nextID = ent.nextID; nextOrder = ent.nextOrder;
+            let ent = await getEntities(nextID, nextOrder, entities, setEntities, props.id); nextID = ent.nextID; nextOrder = ent.nextOrder;
             let tempnames: string[] = []; let tempgroupid = [];
             let taskprioritynames: string[] = []; let taskprioritynums = [];
             let taskprogressnames: string[] = []; let taskprogressnums = [];

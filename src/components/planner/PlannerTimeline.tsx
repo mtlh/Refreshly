@@ -117,7 +117,7 @@ const Sortable = (props: {allgroup: any[], type: string, colourscheme: number, e
   );
 };
 
-export const PlannerTimeline = () => {
+export const PlannerTimeline = (props: {id: number}) => {
     let nextOrder = 1;
     let nextID = 1;
 
@@ -127,11 +127,11 @@ export const PlannerTimeline = () => {
 
     const setup = () => {
       batch(async () => {
-        let ent = await getEntities(nextID, nextOrder, entities, setEntities); nextID = ent.nextID; nextOrder = ent.nextOrder;
-        let progressChoice: string[] = await getProgressChoice();
+        let ent = await getEntities(nextID, nextOrder, entities, setEntities, props.id); nextID = ent.nextID; nextOrder = ent.nextOrder;
+        let progressChoice: string[] = await getProgressChoice(props.id);
         // @ts-ignore
         setProgressChoice(progressChoice);
-        let priorityChoice: string[] = await getPriorityChoice();
+        let priorityChoice: string[] = await getPriorityChoice(props.id);
         // @ts-ignore
         setPriorityChoice(priorityChoice);
       });
@@ -254,7 +254,7 @@ export const PlannerTimeline = () => {
                                   </div>
                                   <button 
                                     class="absolute bottom-0 right-0 hover:flex items-center justify-center hidden w-6 h-6 mb-2 mr-2 text-white bg-gray-400 rounded group-hover:flex hover:bg-gray-500" 
-                                    onclick={()=> {addItem({name: "new task", duedate: day.format("YYYY-MM-DD"), startdate: day.format("YYYY-MM-DD"), type: "item",group: 1,progress: "",description: "",checklist: [],priority: "", lastupdate: new Date(),id: nextID += 1,order: (nextOrder += 1).toString(),externalfiles: [],externallinks: []}, setEntities); saveEntities(entities)}}>
+                                    onclick={()=> {addItem({name: "new task", duedate: day.format("YYYY-MM-DD"), startdate: day.format("YYYY-MM-DD"), type: "item",group: 1, plannerid: props.id, progress: "",description: "",checklist: [],priority: "", lastupdate: new Date(),id: nextID += 1,order: (nextOrder += 1).toString(),externalfiles: [],externallinks: []}, setEntities); saveEntities(entities, props.id)}}>
                                       <svg viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 plus"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
                                   </button>
                               </div>

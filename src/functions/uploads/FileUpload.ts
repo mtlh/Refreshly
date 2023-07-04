@@ -13,7 +13,7 @@ export const SaveFiles = server$(async (blobArr: any[], token: string, index: nu
         blobArr.forEach((text: string)=> {
             textresult += text + "$"
         });
-        const updatefileblob: string = 'UPDATE planner SET externalfiles = ? WHERE username = ? AND id = ?';
+        const updatefileblob: string = 'UPDATE plannerdata SET externalfiles = ? WHERE username = ? AND id = ?';
         const fileupdate = await conn.execute(updatefileblob, [textresult, auth_checked.user.username, index]);
         return true;
     }
@@ -25,7 +25,7 @@ export const LoadFiles = server$(async (token: string, index: number) => {
     const auth_checked = await getAuth(token);
     if (auth_checked.loggedin == true) {
 
-        const selectfileblob: string = 'SELECT externalfiles FROM planner WHERE username = ? AND id = ?';
+        const selectfileblob: string = 'SELECT externalfiles FROM plannerdata WHERE username = ? AND id = ?';
         const fileselect = await conn.execute(selectfileblob, [auth_checked.user.username, index]);
         try {
             // @ts-ignore

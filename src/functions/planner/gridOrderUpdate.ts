@@ -6,7 +6,7 @@ import { Item } from "~/types_const/planner";
 
 const conn = connect(config);
 
-export const gridOrderUpdate = server$(async (token:string|undefined, id1: number, id2: number, alltasks: Item[]) => {
+export const gridOrderUpdate = server$(async (token:string|undefined, id1: number, id2: number, alltasks: Item[], plannerid: number) => {
 
     const auth_checked = await getAuth(token);
     if (auth_checked.loggedin == true) {
@@ -16,18 +16,18 @@ export const gridOrderUpdate = server$(async (token:string|undefined, id1: numbe
         if (dupArray[idnum].length > 1) {
           for (var id in dupArray[idnum]) {
             const index = alltasks.findIndex((task) => task.id === dupArray[idnum][id]);
-            const updateString = "UPDATE planner SET ordernum = ? WHERE id = ? AND username = ?";
+            const updateString = "UPDATE plannerdata SET ordernum = ? WHERE id = ? AND plannerid = ?";
             const orderNum: number = parseFloat(alltasks[index].order) + generateRandomNumber();
-            const updateOrder = await conn.execute(updateString, [orderNum, dupArray[idnum][id], auth_checked.user.username]);
+            const updateOrder = await conn.execute(updateString, [orderNum, dupArray[idnum][id], plannerid]);
           }
         }
       }
 
       const queryString = 
-      `UPDATE planner AS p1
-      JOIN planner AS p2 ON p1.id IN (?, ?)
-      JOIN (SELECT ordernum FROM planner WHERE id = ?) AS p3 ON 1=1
-      JOIN (SELECT ordernum FROM planner WHERE id = ?) AS p4 ON 1=1
+      `UPDATE plannerdata AS p1
+      JOIN plannerdata AS p2 ON p1.id IN (?, ?)
+      JOIN (SELECT ordernum FROM plannerdata WHERE id = ?) AS p3 ON 1=1
+      JOIN (SELECT ordernum FROM plannerdata WHERE id = ?) AS p4 ON 1=1
       SET p1.ordernum = CASE
           WHEN p1.id = ? THEN p3.ordernum
           WHEN p1.id = ? THEN p4.ordernum

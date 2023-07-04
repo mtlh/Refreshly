@@ -2,14 +2,13 @@
 import { jwtVerify } from "jose";
 import server$ from "solid-start/server";
 import { db } from "./db_client";
-import { auth, customise } from "~/db/schema";
+import { auth } from "~/db/schema";
 import { eq } from "drizzle-orm";
 
 export const getAuth = server$(async (token) => {
     var decodejwtfromdb = "blank";
     var decodejwtfromuser = "nothing";
     let getuser;
-    let getCustom;
     let custom = {
         dashboard: true,
         planner: true,
@@ -35,15 +34,14 @@ export const getAuth = server$(async (token) => {
             decodejwtfromdb = verifydb.payload.token;
             //console.log(decodejwtfromdb);
 
-            getCustom = await db.select().from(customise).where(eq(customise.username, getuser[0].username));
             custom = {
-                dashboard: getCustom[0].dashboard,
-                planner: getCustom[0].planner,
-                inbox: getCustom[0].inbox,
-                teams: getCustom[0].teams,
-                projects: getCustom[0].projects,
-                profile: getCustom[0].profile,
-                settings: getCustom[0].settings
+                dashboard: getuser[0].dashboard,
+                planner: getuser[0].planner,
+                inbox: getuser[0].inbox,
+                teams: getuser[0].teams,
+                projects: getuser[0].projects,
+                profile: getuser[0].profile,
+                settings: getuser[0].settings
             }
 
         } catch {

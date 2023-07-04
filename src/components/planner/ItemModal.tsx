@@ -5,7 +5,7 @@ import moment from "moment";
 import { createSignal, createEffect, For } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import server$ from "solid-start/server";
-import { planner } from "~/db/schema";
+import { planner, plannerdata } from "~/db/schema";
 import { db } from "~/functions/db_client";
 import { getAuth } from "~/functions/getAuth";
 import { saveEntities } from "~/functions/planner/saveEntities";
@@ -44,7 +44,7 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
           setItemStore("lastupdate", new Date());
           props.setEntities(itemstore.id, itemstore);
           setItems(createIdsArray(itemstore.checklist));
-          saveEntities(props.entities);
+          saveEntities(props.entities, props.item.plannerid);
         }
       }
   };
@@ -58,11 +58,11 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
         <div class="grid grid-cols-12 sortable mr-2" use:sortable classList={{"opacity-80": sortable.isActiveDraggable, "transition-transform": !!state.active.draggable}}>
           <div class="col-span-1 m-auto">
             {itemstore.checklist[props.item].checked ?
-              <button onclick={() => {setItemStore("checklist", props.item, {checked: !itemstore.checklist[props.item].checked, content: itemstore.checklist[props.item].content}); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities)}}>
+              <button onclick={() => {setItemStore("checklist", props.item, {checked: !itemstore.checklist[props.item].checked, content: itemstore.checklist[props.item].content}); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities, props.item.plannerid)}}>
                 <svg fill="#000000" version="1.1" class="m-auto w-5" id="Capa_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 490 490"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <polygon points="452.253,28.326 197.831,394.674 29.044,256.875 0,292.469 207.253,461.674 490,54.528 "></polygon> </g></svg>
               </button>
               :
-              <button onclick={() => {setItemStore("checklist", props.item, {checked: !itemstore.checklist[props.item].checked, content: itemstore.checklist[props.item].content}); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities)}}>
+              <button onclick={() => {setItemStore("checklist", props.item, {checked: !itemstore.checklist[props.item].checked, content: itemstore.checklist[props.item].content}); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities, props.item.plannerid)}}>
                 <svg fill="#000000" class="m-auto w-5" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M0 14.545L1.455 16 8 9.455 14.545 16 16 14.545 9.455 8 16 1.455 14.545 0 8 6.545 1.455 0 0 1.455 6.545 8z" fill-rule="evenodd"></path> </g></svg>
               </button>
             }
@@ -70,7 +70,7 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
           <input
             class="input my-1 w-full text-sm col-span-10 m-auto"
             value={itemstore.checklist[props.item].content}
-            onchange={(e)=> {setItemStore("checklist", props.item, {checked: itemstore.checklist[props.item].checked, content: e.target.value}); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities) }}
+            onchange={(e)=> {setItemStore("checklist", props.item, {checked: itemstore.checklist[props.item].checked, content: e.target.value}); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities, props.item.plannerid) }}
           />
           <div class="col-span-1 m-auto rounded-lg">
               <button onclick={() => {
@@ -80,7 +80,7 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
                     removedarr.push(itemstore.checklist[x]);
                   }
                 }
-                setItems(createIdsArray(removedarr)); setItemStore("checklist", removedarr); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities);}}>
+                setItems(createIdsArray(removedarr)); setItemStore("checklist", removedarr); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities, props.item.plannerid);}}>
                 <svg viewBox="0 0 24 24" class="m-auto w-5" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.73708 6.54391V18.9857C5.73708 19.7449 6.35257 20.3604 7.11182 20.3604H16.8893C17.6485 20.3604 18.264 19.7449 18.264 18.9857V6.54391M2.90906 6.54391H21.0909" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> <path d="M8 6V4.41421C8 3.63317 8.63317 3 9.41421 3H14.5858C15.3668 3 16 3.63317 16 4.41421V6" stroke="#1C1C1C" stroke-width="1.7" stroke-linecap="round"></path> </g></svg>
               </button>
           </div>
@@ -159,7 +159,7 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
       setItemStore("duedate", duedate); 
       setItemStore("lastupdate", new Date()); 
       props.setEntities(itemstore.id, itemstore); 
-      saveEntities(props.entities);
+      saveEntities(props.entities, props.item.plannerid);
     }
   }
   checkdates(itemstore.startdate!, itemstore.duedate!);
@@ -168,7 +168,7 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
       <>
         <label for={itemstore.id.toString()} class="modal cursor-pointer z-50">
           <label class="modal-box relative rounded-lg w-full h-full" for="">
-            <input class="py-1 w-full text-lg font-bold" value={itemstore.name} onChange={(e) => {setItemStore("name", e.target.value); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities)}}/>
+            <input class="py-1 w-full text-lg font-bold" value={itemstore.name} onChange={(e) => {setItemStore("name", e.target.value); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities, props.item.plannerid)}}/>
             <p class="py-1 text-left italic font-light">Last updated: {moment(itemstore.lastupdate).format("HH:mm DD-MM-YYYY")}</p>
             <div class="grid grid-cols-2">
               <div class="form-control w-full my-1 m-auto">
@@ -188,7 +188,7 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
                 <label class="label">
                   <span class="label-text">Progress:</span>
                 </label>
-                <select class="select" value={itemstore.progress} onChange={(e) => {setItemStore("progress", e.target.value); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities)}}>
+                <select class="select" value={itemstore.progress} onChange={(e) => {setItemStore("progress", e.target.value); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities, props.item.plannerid)}}>
                   <option>{itemstore.progress}</option>
                   <For each={props.progressChoice}>
                     {(progress) => (
@@ -205,7 +205,7 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
                 <label class="label">
                   <span class="label-text">Priority:</span>
                 </label>
-                <select class="select" value={itemstore.priority} onChange={(e) => {setItemStore("priority", e.target.value); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities)}}>
+                <select class="select" value={itemstore.priority} onChange={(e) => {setItemStore("priority", e.target.value); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities, props.item.plannerid)}}>
                   <option>{itemstore.priority}</option>
                   <For each={props.priorityChoice}>
                     {(priority) => (
@@ -223,7 +223,7 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
               <label class="label">
                 <span class="label-text">Description:</span>
               </label>
-              <textarea class="textarea textarea-bordered h-full rounded-lg" value={itemstore.description} onChange={(e) => {setItemStore("description", e.target.value); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities)}}></textarea>
+              <textarea class="textarea textarea-bordered h-full rounded-lg" value={itemstore.description} onChange={(e) => {setItemStore("description", e.target.value); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities, props.item.plannerid)}}></textarea>
             </div>
             <div class="form-control w-full my-1 m-auto">
               <label class="label">
@@ -245,7 +245,7 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
                     <div class="sortable">{activeItem()}</div>
                   </DragOverlay>
                 </DragDropProvider>
-                <button onClick={() => {try {setItemStore("checklist", (l: any) => [...l, {checked: false, content: "new checklist"}])}catch{setItemStore("checklist", [{checked: false, content: "new checklist"}])}; setItems(createIdsArray(itemstore.checklist)); setItems(createIdsArray(itemstore.checklist)); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities)}} 
+                <button onClick={() => {try {setItemStore("checklist", (l: any) => [...l, {checked: false, content: "new checklist"}])}catch{setItemStore("checklist", [{checked: false, content: "new checklist"}])}; setItems(createIdsArray(itemstore.checklist)); setItems(createIdsArray(itemstore.checklist)); setItemStore("lastupdate", new Date()); props.setEntities(itemstore.id, itemstore); saveEntities(props.entities, props.item.plannerid)}} 
                   class="bg-grey-100 text-2xl rounded-sm w-[95%] text-black p-1 my-1 hover:ring-2 m-auto">
                   +
                 </button>
@@ -330,21 +330,21 @@ export const TaskItem = (props: {item: Item, entities: Record<Id, Entity>, setEn
               </form>
             </div>
             
-            <button onclick={() => deletetask(itemstore.id, props.setEntities, props.entities, props.type)} class="py-1 my-2 w-full bg-red-500 text-white rounded-lg hover:bg-red-700">DELETE TASK</button>
+            <button onclick={() => deletetask(itemstore, props.setEntities, props.entities, props.type)} class="py-1 my-2 w-full bg-red-500 text-white rounded-lg hover:bg-red-700">DELETE TASK</button>
           </label>
         </label>
       </>
     );
   };
 
-export const deletetask = async (itemid: number, setEntities: any, entities: any, type: string) => {
-    const DeleteFromPlanner = server$(async (removeid: number, entities: Entity[], token:string|undefined) => {
+export const deletetask = async (item: Item, setEntities: any, entities: any, type: string) => {
+    const DeleteFromPlanner = server$(async (item: Item, entities: Entity[], token:string|undefined) => {
         const auth_checked = await getAuth(token);
         let newarr = [];
         if (auth_checked.loggedin == true) {
         for (var x in entities) {
-            if (entities[x].id == removeid) {
-              await db.delete(planner).where(and(eq(planner.id, entities[x].id), eq(planner.username, auth_checked.user.username)));
+            if (entities[x].id == item.id) {
+              await db.delete(plannerdata).where(eq(plannerdata.id, entities[x].id));
             } else {
               newarr.push(entities[x]);
             }
@@ -352,6 +352,6 @@ export const deletetask = async (itemid: number, setEntities: any, entities: any
         }
         return newarr;
     })
-    const newarr = await DeleteFromPlanner(itemid, entities, Cookies.get("auth"));
-    setEntities(produce((prevStore: any[]) => {delete prevStore[itemid];}));
+    const newarr = await DeleteFromPlanner(item, entities, Cookies.get("auth"));
+    setEntities(produce((prevStore: any[]) => {delete prevStore[item.id];}));
 }

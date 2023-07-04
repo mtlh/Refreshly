@@ -20,6 +20,7 @@ const Login = () => {
         const logincheck = server$(async (pass, username) => {
             if (pass && username) { 
                 const findusername = await db.select().from(auth).where(eq(auth.username, username))
+                console.log(findusername);
                 if (findusername.length == 1) {
                     const issame = await encryptCheck(pass, findusername[0].pass);
                     if (issame == true) {
