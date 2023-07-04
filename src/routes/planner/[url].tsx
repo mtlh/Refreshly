@@ -13,6 +13,7 @@ import NotFound from "../[...404]";
 export default function Planner() {
   const nav = useNavigate();
   const params = useParams();
+  console.log(params.url)
 
   const [canView, setCanView] = createSignal({view: false, id: 0});
   createEffect(async ()=>{
@@ -53,7 +54,7 @@ export default function Planner() {
             <button onclick={()=> {SetFormat("stats"); nav("/planner/"+ params.url + "?stats=true")}}>Stats</button>
             <button onclick={()=> {SetFormat("options"); nav("/planner/"+ params.url + "?options=true")}}>Options</button>
           </div>
-          { format() == "board" &&
+          {/* { format() == "board" &&
               <PlannerBoard type="board" id={canView().id} />
           }
           { format() == "grid" &&
@@ -67,7 +68,7 @@ export default function Planner() {
           }
           { format() == "options" &&
               <PlannerOptions id={canView().id} />
-          }
+          } */}
         </main>
       :
         <NotFound />
