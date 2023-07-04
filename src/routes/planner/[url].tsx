@@ -16,14 +16,14 @@ export default function Planner() {
   console.log(params.url)
 
   const [canView, setCanView] = createSignal({view: false, id: 0});
-  createEffect(async ()=>{
+  createEffect(async () => {
     const plannerid = await PlannerAuth(Cookies.get("auth")!, params.url);
     console.log(plannerid)
     if (plannerid != 0){
       setCanView({view: true, id: plannerid});
     }
     console.log(canView())
-  })
+  }, [])
 
   const [format, SetFormat] = createSignal("board");
   const [searchParams] = useSearchParams();
