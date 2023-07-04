@@ -54,7 +54,7 @@ export default function Planner() {
             <button onclick={()=> {SetFormat("stats"); nav("/planner/"+ params.url + "?stats=true")}}>Stats</button>
             <button onclick={()=> {SetFormat("options"); nav("/planner/"+ params.url + "?options=true")}}>Options</button>
           </div>
-          {/* { format() == "board" &&
+          { format() == "board" &&
               <PlannerBoard type="board" id={canView().id} />
           }
           { format() == "grid" &&
@@ -68,7 +68,7 @@ export default function Planner() {
           }
           { format() == "options" &&
               <PlannerOptions id={canView().id} />
-          } */}
+          }
         </main>
       :
         <NotFound />
