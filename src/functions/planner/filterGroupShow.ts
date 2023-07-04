@@ -10,6 +10,7 @@ export const getGroupShowFilter = async (plannerid: number) => {
         const auth_checked = await getAuth(token);
         if (auth_checked.loggedin == true) {
             const userplanner = await db.select().from(planner).where(eq(planner.id, plannerid));
+            console.log(userplanner)
             return userplanner[0].groupfilter;
         } else {
             return "";
