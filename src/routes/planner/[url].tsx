@@ -17,9 +17,11 @@ export default function Planner() {
   const [canView, setCanView] = createSignal({view: false, id: 0});
   createEffect(async ()=>{
     const plannerid = await PlannerAuth(Cookies.get("auth")!, params.url);
+    console.log(plannerid)
     if (plannerid != 0){
       setCanView({view: true, id: plannerid});
     }
+    console.log(canView())
   })
 
   const [format, SetFormat] = createSignal("board");
