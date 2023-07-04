@@ -8,7 +8,7 @@ import { createSignal } from 'solid-js';
 import server$ from "solid-start/server";
 import { db } from "~/functions/db_client";
 import { eq } from "drizzle-orm";
-import { auth, customise } from "~/db/schema";
+import { auth } from "~/db/schema";
 import { encrypt, encryptCheck } from "~/functions/encrypt";
 import { base_noauth, type baseauthtype } from "~/functions/db_config";
 
@@ -149,7 +149,7 @@ export default function SettingsPage() {
     const updatecustom = server$(async (custom: baseauthtype["custom"], token:string|undefined) => {
       const auth_checked = await getAuth(token);
       if (auth_checked.loggedin == true) {
-        await db.update(customise).set({
+        await db.update(auth).set({
           dashboard: custom.dashboard,
           planner: custom.planner,
           inbox: custom.inbox,
@@ -157,7 +157,7 @@ export default function SettingsPage() {
           projects: custom.projects,
           profile: custom.profile,
           settings: custom.settings
-        }).where(eq(customise.username, auth_checked.user.username));
+        }).where(eq(auth.username, auth_checked.user.username));
       }
     })
     await updatecustom(isauth.custom, Cookies.get("auth"));
